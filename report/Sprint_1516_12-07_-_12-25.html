@@ -1,0 +1,178 @@
+<html>
+
+<head>
+    <style>
+        .success {
+            color: green;
+        }
+        .fail {
+            color: red;
+        }
+    </style>
+    <script type="text/javascript" src="https://www.google.com/jsapi"></script>
+    <script type="text/javascript">
+
+   //Table lists group definition.
+      google.load("visualization", "1.1", {packages:["table"]});
+      google.setOnLoadCallback(drawTable);
+
+      function drawTable() {
+
+        var tableOptions = [
+         {
+            getDataTable: function() {
+                var data = new google.visualization.DataTable();
+                data.addColumn('string', 'Key');
+                data.addColumn('string', 'Priority');
+                data.addColumn('string', 'Summary');
+                data.addColumn('string', 'Status');
+                data.addRows([['ATEAM-4022', 'Major', '[23/DEC/2015] Error message is displayed when book a F2F cp20 class', 'Closed'], ['ATEAM-4021', 'Major', "[23/DEC/2015] Atomation - PL40 page can't be load correctly", 'Closed'], ['ATEAM-4020', 'Major', 'Langage selection list on login page cannot be scrolled down to select the top langages of the list on iPhone 5s.', 'Closed'], ['ATEAM-4018', 'Major', '[21/DEC/2015] F2F teacher class is not displayed', 'Closed'], ['ATEAM-3942', 'Major', '[PL] The level name of PL20 and PL40 class topic shold be from 0A to 14', 'Open'], ['ATEAM-3941', 'Major', '[PL] The HK Beginner stdent cannot see any non-bilingal PL20 class', 'Closed'], ['ATEAM-3940', 'Major', '[PL] The HK S15 stdent wold go to CN server by defalt when open private lesson page', 'Closed'], ['ATEAM-3922', 'Major', '[11/Dec/15][EC Web] - The minimm spported version of chrome shold be 45. The minimm spported version of Firefox shold be 40.', 'Closed'], ['ATEAM-3921', 'Minor', "[10/Dec/15] [EC Web] - when video not plgin, WebRTC video check icon didn't shown correctly.", 'Closed'], ['ATEAM-3920', 'Minor', '[9/Dec/15] [EC Web] - Blrb isse collection.', 'Closed'], ['ATEAM-3919', 'Critical', '[18/Dec/15] [EC Web] - Failed to book cp20 class from stdyplan.', 'Closed'], ['ATEAM-3918', 'Major', '[09/DEC/2015] Browser check is failed when ser DOES NOT allow adio/video', 'Closed'], ['ATEAM-3917', 'Minor', '[09/DEC/20015] Web Page has no response if ser click Enter Adobe Classroom in the web browser check fail page', 'Open'], ['ATEAM-3916', 'Minor', '[09/DEC/2015] Web page has no response if ser click Enter CLASSROOM btton when the class is already end', 'Open'], ['ATEAM-3915', 'Minor', '[09/Dec/15][EC Web] - System no response when ser clicking "Join the class"  on EC APP if ser enter Evc class before.', 'Open'], ['ATEAM-3913', 'Blocker', '[08/Dec/15][EC Web] - Error 500 with Missing Parameter: switch platform fond on EC old APP.', 'Closed']]);
+                return data;
+            },
+            containerId: 'bug_list_div'
+         },
+         {
+            getDataTable: function() {
+                var data = new google.visualization.DataTable();
+                data.addColumn('string', 'Key');
+                data.addColumn('string', 'Priority');
+                data.addColumn('string', 'Summary');
+                data.addColumn('string', 'Status');
+                data.addRows([['ATEAM-4021', 'Major', "[23/DEC/2015] Atomation - PL40 page can't be load correctly", 'Closed']]);
+                return data;
+            },
+            containerId: 'automation_bug_div'
+         },
+         {
+            getDataTable: function() {
+                var data = new google.visualization.DataTable();
+                data.addColumn('string', 'Key');
+                data.addColumn('string', 'Priority');
+                data.addColumn('string', 'Summary');
+                data.addColumn('string', 'Status');
+                data.addRows([['ATEAM-3872', 'Major', '[UAT]PL booking page time display error ', 'Closed']]);
+                return data;
+            },
+            containerId: 'live_defect_div'
+         },
+         {
+            getDataTable: function() {
+                var data = new google.visualization.DataTable();
+                data.addColumn('string', 'Key');
+                data.addColumn('string', 'Priority');
+                data.addColumn('string', 'Summary');
+                data.addColumn('string', 'Status');
+                data.addRows([['ATEAM-4032', 'Major', 'Release Cache Killer for Classroom 2 Center Rollot Release', 'TDM Review'], ['ATEAM-3927', 'Major', 'Release Classroom 2 Center Rollot and App Trial', 'Closed']]);
+                return data;
+            },
+            containerId: 'change_request_div'
+         }
+        ];
+
+        tableOptions.forEach(function (option) {
+            var chart = new google.visualization.Table(document.getElementById(option.containerId));
+            chart.draw(option.getDataTable(), {showRowNumber: true, width: '80%'});
+        });
+
+      }
+
+      //PieChart group Definition.
+      google.load("visualization", "1", {packages:["corechart"]});
+      google.setOnLoadCallback(drawChart);
+      function drawChart() {
+        var chartOptions = [
+         {
+            chartOptions: {
+              title: 'Bug priority share'
+            },
+            data:google.visualization.arrayToDataTable([['PriorityCategory', 'Nmbers'], ['Blocker', 1], ['Major', 9], ['Critical', 1], ['Minor', 5]]),
+            containerId: 'piechart_priority_share'
+         },
+          {
+            chartOptions: {
+              title: 'Story share'
+            },
+            data:google.visualization.arrayToDataTable([['Story', 'BgNm'], ['ATEAM-3880', 5], ['ATEAM-3884', 1], ['ECS-4894', 1], ['ECS-4893', 1], ['ECS-4902', 1]]),
+            containerId: 'piechart_story_share'
+         }
+        ];
+
+        chartOptions.forEach(function (option) {
+            var chart = new google.visualization.PieChart(document.getElementById(option.containerId));
+            chart.draw(option.data, option.chartOptions);
+        });
+      }
+
+      //bug trend of accumulative opened bugs & closed bugs
+      google.load("visualization", "1", {packages:["corechart"]});
+      google.setOnLoadCallback(drawChart1);
+
+      function drawChart1() {
+        var data = google.visualization.arrayToDataTable([['date', 'total bug number', 'opened bug number'], ['2015-12-07', 0, 0], ['2015-12-08', 0, 0], ['2015-12-09', 1, 1], ['2015-12-10', 7, 6], ['2015-12-11', 8, 7], ['2015-12-12', 9, 8], ['2015-12-13', 9, 8], ['2015-12-14', 9, 8], ['2015-12-15', 9, 7], ['2015-12-16', 9, 7], ['2015-12-17', 9, 6], ['2015-12-18', 12, 7], ['2015-12-19', 12, 7], ['2015-12-20', 12, 7], ['2015-12-21', 12, 7], ['2015-12-22', 13, 7], ['2015-12-23', 14, 7], ['2015-12-24', 16, 9], ['2015-12-25', 16, 9]]);
+
+        var options = {
+          title: 'Sprint bug trends',
+          legend: { position: 'bottom' }
+        };
+
+        var chart = new google.visualization.LineChart(document.getElementById('bug_trends'));
+
+        chart.draw(data, options);
+      }
+
+    </script>
+
+</head>
+<body>
+<div class="page-header" style=" text-align:center;">
+  <h1>ASD Automation Report - <body>Sprint 1516 (12/07 - 12/25)</body></h1>
+    <h5>QA resource:"Kevin.Cai, Tails.Zhang, Carina.Wang, Crystal.Huang"</h5>
+</div>
+
+<div class="Sprint status">
+    <h4>Sprint Status</h4>
+        <div>Sprint Status: <b class = "success">"success"</b>, actual sprint story points: <b>"600"</b> .</div>
+
+</div>
+<div class="bugs in current sprint">
+  <h4>Found bugs in current sprint</h4>
+    <div id="bug_list_div"> Bug</div>
+
+  <h5>Bug analysis charts</h5>
+    <div id="piechart_priority_share" style="width: 500px; height: 300px;"></div>
+        <div>The detail priority related bug info are:<br />{'Blocker': ['ATEAM-3913'], 'Major': ['ATEAM-3922', 'ATEAM-3941', 'ATEAM-3940', 'ATEAM-3942', 'ATEAM-4018', 'ATEAM-3918', 'ATEAM-4022', 'ATEAM-4021', 'ATEAM-4020'], 'Critical': ['ATEAM-3919'], 'Minor': ['ATEAM-3921', 'ATEAM-3920', 'ATEAM-3916', 'ATEAM-3917', 'ATEAM-3915']}</div>
+
+    <div id="piechart_story_share" style="width: 500px; height: 300px;"></div>
+        <div>Below issue should pay attention to, for they are not related to any of stories in sprint: <br />['ATEAM-4022', 'ATEAM-4021', 'ATEAM-4020', 'ATEAM-4018', 'ATEAM-3918', 'ATEAM-3917', 'ATEAM-3916']</div>
+
+    <div id="bug_trends" style="width: 600px; height: 300px;"></div>
+
+
+</div>
+
+<div class="Automation Found Bug Panel ">
+    <h4>Bug found by Automation</h4>
+        <div id="automation_bug_div"> Bug Found By Automation</div>
+    <br />
+        <div>The percentage of bug found by automation are ---<b>6.25%</b>---</div>
+
+</div>
+
+<div class = "Live Defect Panel">
+    <h4>Live Defect</h4>
+        <div id="live_defect_div"> Live Defect</div>
+        <br />
+        <div>The percentage of live defect of all the defects are ---<b>5.88%</b>---</div>
+</div>
+
+<div class ="Change Request Panel">
+    <h4>Change request</h4>
+        <div id="change_request_div"> Change Request</div>
+        <br />
+        <div>The percentage of change request of all the tasks are ---<b>7.14%</b>---</div>
+</div>
+
+
+
+</body>
+</html>
