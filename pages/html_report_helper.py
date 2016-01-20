@@ -32,6 +32,7 @@ class HTML_Report(object):
                      story_share_list, story_share_detail,\
                      total_bug_and_opened_bug_pair_list,\
                      automation_found_bug_list, automation_percentage,\
+                     previous_bugs_closed_in_sprint,\
                      live_defect_list, live_defect_percentage,\
                      change_request_list, change_request_percentage
                      ):
@@ -95,6 +96,8 @@ class HTML_Report(object):
 
         contents = contents.replace("{sprint_change_request_nested_lists}", str(change_request_list))
         contents = contents.replace("{sprint_change_request_percentage}", str(change_request_percentage))
+
+        contents = contents.replace("{Previous_found_bugs_closed_in_sprint}", str(previous_bugs_closed_in_sprint))
 
         with open(self.report_file, "w") as f:
             f.writelines(contents)

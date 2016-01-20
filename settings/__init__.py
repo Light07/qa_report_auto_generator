@@ -1,10 +1,13 @@
 __author__ = 'kevin.cai'
 
 jira_options = {'server':"https://jira.englishtown.com"}
-jira_account = {'username':"kevin.cai", 'password':"***"}
+
+jira_account = {'username':"kevin.cai", 'password':"****"}
 
 
 board_id = 60
+
+sprint_name = "Sprint 1517 (12/28 - 01/15)"
 
 # Project Key
 project_name = "ATEAM"

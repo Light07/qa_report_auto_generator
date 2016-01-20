@@ -17,6 +17,13 @@ class JiraHelper(object):
         Trivial = "Trivial"
         Low = "Low"
 
+    class BugStatus:
+        open = "OPEN"
+        in_progress = "IN PROGRESS"
+        resolved = "RESOLVED"
+        reopened = "REOPENED"
+        closed = "CLOSED"
+
     class IssueType:
         StandardType = "standardIssueTypes()"
         Bug = "bug"
@@ -30,37 +37,49 @@ class JiraHelper(object):
         UTC = "UTC"
         China = "Asia/Shanghai"
 
-    def __init__(self,jira_server, securityUser = None):
+    def __init__(self, jira_server, securityUser=None):
         if securityUser:
             try:
-                self.jira = JIRA(options = jira_options,basic_auth=(securityUser['username'], securityUser['password']))
+                self.jira = JIRA(options = jira_server, basic_auth=(securityUser['username'], securityUser['password']))
             except Exception,e:
                 self.jira = None
         else:
             try:
-                self.jira =JIRA(options = jira_options)
+                self.jira =JIRA(options = jira_server)
             except Exception,e:
                 self.jira = None
 
-    def get_active_sprint_by_board_id(self, board_id):
-        sp = self.jira.sprints(board_id)
+    def get_active_sprint_by_board_id(self, id_of_board):
+        sp = self.jira.sprints(id_of_board)
         for i in sp:
            if i.raw["state"] == "ACTIVE":
                sprint_id = i.raw['id']
         return sprint_id
 
-    def get_sprint_id_by_sprint_name(self, board_id, sprint_name):
-        sp = self.jira.sprints(board_id)
+    def get_sprint_id_by_sprint_name(self, id_of_board, sprint_name):
+        sp = self.jira.sprints(id_of_board)
         sprint_name = (str(sprint_name).strip()).lower()
         for item in sp:
             if unicode(item).encode('utf-8').strip().lower() == sprint_name:
                 return item.raw['id']
 
-    def get_sprint_info(self, sprint_id, board_id=board_id):
+    def get_fix_version_by_sprint_id(self, sprint_id):
+        '''
+        this function may be not accurate, can a sprint have more than one fixversion?
+        :param sprint_id:
+        :return:
+        '''
+        story_ids = self.get_story_id_by_sprint(sprint_id)
+        for s in story_ids:
+            if hasattr(s.fields, "fixVersions"):
+                if s.fields.fixVersions:
+                    return str(s.fields.fixVersions[0])
+
+    def get_sprint_info(self, sprint_id, id_of_board=board_id):
         '''
 
         :param sprint_id:
-        :param board_id:
+        :param id_of_board:
         :return:
         {
             u'startDate': u'07/Dec/15 10:00 AM',
@@ -76,7 +95,7 @@ class JiraHelper(object):
         }
 
         '''
-        return self.jira.sprint_info(board_id, sprint_id)
+        return self.jira.sprint_info(id_of_board, sprint_id)
 
     def get_return_value_from_api_request(self, restful_string, property):
         return self.jira.find(restful_string, property).raw["issues"]
@@ -147,9 +166,9 @@ class JiraHelper(object):
                     number +=1
         return len(issue_ids), len(issue_ids) - number
 
-    def html_get_total_bug_and_open_bug_trend_by_sprint(self, sprint_id, board_id=board_id):
+    def html_get_total_bug_and_open_bug_trend_by_sprint(self, sprint_id, id_of_board=board_id):
         '''
-        :param board_id:
+        :param id_of_board:
         :param sprint_id:
         :return: [
           ['Date',  'total bug number', 'Opened bug number'],
@@ -281,6 +300,21 @@ class JiraHelper(object):
     def get_story_id_by_sprint(self, sprint_id):
         story_type_query = '''project = "{project}" AND issuetype in ({issue_type}) and sprint = {sprint}'''.format(project=project_name, issue_type=self.IssueType.Story, sprint=sprint_id)
         return self.get_task_id_by_query_string(story_type_query)
+
+    def get_tasks_removed_from_current_sprint(self, sprint_id):
+        fixversion = self.get_fix_version_by_sprint_id(sprint_id)
+        task_removed_query = '''project = "{project}" AND issuetype in ({issue_type}) and fixversion was in "{fixversion}" and fixversion !="{fixversion}"'''.format(project=project_name, issue_type=self.IssueType.StandardType, fixversion=fixversion)
+        return self.get_task_info_by_query_string(task_removed_query)
+
+    def get_bugs_not_found_in_sprint_but_closed_in_sprint(self, sprint_id):
+        sprint_info = self.get_sprint_info(sprint_id)
+        start_day = DateTime(sprint_info["startDate"]).asdatetime().strftime("%Y-%m-%d")
+        if str(sprint_info["completeDate"]) != "None":
+            end_day = DateTime(sprint_info["completeDate"]).asdatetime().strftime("%Y-%m-%d")
+        else:
+            end_day = DateTime(sprint_info["endDate"]).asdatetime().strftime("%Y-%m-%d")
+        bug_query_string = '''project = "{project}" AND issuetype in ({issue_type}) and created <"{start_day}" and  resolved>="{start_day}" and resolved <="{end_day}" and status = {status} '''.format(project=project_name, issue_type=self.IssueType.Bug, start_day=start_day, end_day=end_day, status=self.BugStatus.closed)
+        return self.get_task_info_by_query_string(bug_query_string)
 
     def get_task_id_that_has_linked_task(self, sprint_id):
         all_ids = self.get_bug_id_by_sprint(sprint_id)
@@ -585,8 +619,8 @@ class JiraHelper(object):
         us_standard_time = DateTime(date_time)
         return DateTime(us_standard_time).toZone(target_time_format)
 
-    def html_get_sprint_status(self, sprint_id, board_id=board_id):
-        sprint_info = self.get_sprint_info(sprint_id, board_id)
+    def html_get_sprint_status(self, sprint_id, id_of_board=board_id):
+        sprint_info = self.get_sprint_info(sprint_id, id_of_board)
         status = None
         if str(sprint_info["completeDate"]) != str(status):
             if DateTime(sprint_info["completeDate"]) < DateTime(sprint_info["endDate"]) +delay_day:
