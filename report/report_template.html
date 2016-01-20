@@ -1,0 +1,219 @@
+<html>
+
+<head>
+    <style>
+        .success {
+            color: green;
+        }
+        .fail {
+            color: red;
+        }
+    </style>
+    <script type="text/javascript" src="https://www.google.com/jsapi"></script>
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    <script type="text/javascript">
+
+   //Table lists group definition.
+      google.load("visualization", "1.1", {packages:["table"]});
+      google.setOnLoadCallback(drawTable);
+
+      function drawTable() {
+
+        var tableOptions = [
+         {
+            getDataTable: function() {
+                var data = new google.visualization.DataTable();
+                data.addColumn('string', 'Key');
+                data.addColumn('string', 'Priority');
+                data.addColumn('string', 'Summary');
+                data.addColumn('string', 'Status');
+                data.addRows({sprint_bug_nested_lists});
+                return data;
+            },
+            containerId: 'bug_list_div'
+         },
+         {
+            getDataTable: function() {
+                var data = new google.visualization.DataTable();
+                data.addColumn('string', 'Key');
+                data.addColumn('string', 'Priority');
+                data.addColumn('string', 'Summary');
+                data.addColumn('string', 'Status');
+                data.addRows({Previous_found_bugs_closed_in_sprint});
+                return data;
+            },
+            containerId: 'Previous_found_bugs_closed_in_sprint_div'
+         },
+         {
+            getDataTable: function() {
+                var data = new google.visualization.DataTable();
+                data.addColumn('string', 'Key');
+                data.addColumn('string', 'Priority');
+                data.addColumn('string', 'Summary');
+                data.addColumn('string', 'Status');
+                data.addRows({sprint_automation_found_bug_nested_lists});
+                return data;
+            },
+            containerId: 'automation_bug_div'
+         },
+         {
+            getDataTable: function() {
+                var data = new google.visualization.DataTable();
+                data.addColumn('string', 'Key');
+                data.addColumn('string', 'Priority');
+                data.addColumn('string', 'Summary');
+                data.addColumn('string', 'Status');
+                data.addRows({sprint_live_defect_nested_lists});
+                return data;
+            },
+            containerId: 'live_defect_div'
+         },
+         {
+            getDataTable: function() {
+                var data = new google.visualization.DataTable();
+                data.addColumn('string', 'Key');
+                data.addColumn('string', 'Priority');
+                data.addColumn('string', 'Summary');
+                data.addColumn('string', 'Status');
+                data.addRows({sprint_change_request_nested_lists});
+                return data;
+            },
+            containerId: 'change_request_div'
+         }
+        ];
+
+        tableOptions.forEach(function (option) {
+            var chart = new google.visualization.Table(document.getElementById(option.containerId));
+            chart.draw(option.getDataTable(), {showRowNumber: true, width: '80%'});
+        });
+
+      }
+
+      //PieChart group Definition.
+      google.load("visualization", "1", {packages:["corechart"]});
+      google.setOnLoadCallback(drawChart);
+      function drawChart() {
+        var chartOptions = [
+         {
+            chartOptions: {
+              title: 'Bug priority share'
+            },
+            data:google.visualization.arrayToDataTable({bug_priority_nested_lists}),
+            containerId: 'piechart_priority_share'
+         },
+          {
+            chartOptions: {
+              title: 'Story share'
+            },
+            data:google.visualization.arrayToDataTable({story_share_nested_lists}),
+            containerId: 'piechart_story_share'
+         }
+        ];
+
+        chartOptions.forEach(function (option) {
+            var chart = new google.visualization.PieChart(document.getElementById(option.containerId));
+            chart.draw(option.data, option.chartOptions);
+        });
+      }
+
+      <!--//bug trend of accumulative opened bugs & closed bugs Version 1-->
+      <!--google.load("visualization", "1", {packages:["corechart"]});-->
+      <!--google.setOnLoadCallback(drawChart1);-->
+
+      <!--function drawChart1() {-->
+        <!--var data = google.visualization.arrayToDataTable({total_bug_and_opened_bug_pair_nested_list});-->
+
+        <!--var options = {-->
+          <!--title: 'Sprint bug trends',-->
+          <!--legend: { position: 'bottom' }-->
+        <!--};-->
+
+        <!--var chart = new google.visualization.LineChart(document.getElementById('bug_trends'));-->
+
+        <!--chart.draw(data, options);-->
+      <!--}-->
+
+      //bug trend of accumulative opened bugs & closed bugs -- Version 2
+      google.load('visualization', '1.0', {'packages':['bar']});
+      google.setOnLoadCallback(drawChart1);
+
+      function drawChart1() {
+        var data = google.visualization.arrayToDataTable({total_bug_and_opened_bug_pair_nested_list});
+
+        var options = {
+          chart: {
+            title: 'Total Bugs VS Still Opened Bugs',
+            subtitle: 'Total bugs number and still opened bugs  numbers by the end of every day',
+          },
+          bars: 'vertical',
+          vAxis: {format: 'decimal'},
+          height: 400,
+          colors: ['#1b9e77', '#FF7F00']
+        };
+
+        var chart = new google.charts.Bar(document.getElementById('bug_trends'));
+
+        chart.draw(data, options);
+
+      }
+    </script>
+
+</head>
+<body>
+<div class="page-header" style=" text-align:center;">
+  <h1>ASD Sprint Report - <body>{sprint_name_string}</body></h1>
+    <h5>QA resource:"{qa_resource}"</h5>
+</div>
+
+<div class="Sprint-status">
+    <h4>Sprint Status</h4>
+        <div>Sprint Status: <b class = "{sprint_status}">"{sprint_status}"</b>, actual sprint story points completed: <b>"{actual_story_points}"</b> .</div>
+
+</div>
+<div class="bugs-in-current-sprint">
+  <h4>Found bugs in current sprint</h4>
+    <div id="bug_list_div"> Bug</div>
+
+  <h5>Bug analysis charts</h5>
+    <div id="piechart_priority_share" style="width: 500px; height: 300px;"></div>
+        <div>The detail priority related bug info are:<br />{bug_priority_share_detail_info}</div>
+
+    <div id="piechart_story_share" style="width: 500px; height: 300px;"></div>
+        <div>Below issue should pay attention to, for they are not related to any of stories in sprint: <br />{story_share_detail_info}</div>
+    <br />
+    <div id="bug_trends"></div>
+
+
+</div>
+
+<div class="Previous-found-bugs-closed-in-sprint">
+    <h4>Bug found by other sprint but closed in current sprint</h4>
+        <div id="Previous_found_bugs_closed_in_sprint_div"> Found by other sprint but closed in current sprint</div>
+    <br />
+
+</div>
+
+<div class="Automation-Found-Bug-Panel ">
+    <h4>Bug found by Automation</h4>
+        <div id="automation_bug_div"> Bug Found By Automation</div>
+    <br />
+        <div>The percentage of bug found by automation are ---<b>{sprint_automation_bug_percentage}</b>---</div>
+
+</div>
+
+<div class = "Live-Defect-Panel">
+    <h4>Live Defect</h4>
+        <div id="live_defect_div"> Live Defect</div>
+        <br />
+        <div>The percentage of live defect of all the defects are ---<b>{sprint_live_defect_percentage}</b>---</div>
+</div>
+
+<div class ="Change-Request-Panel">
+    <h4>Change request</h4>
+        <div id="change_request_div"> Change Request</div>
+        <br />
+        <div>The percentage of change request of all the tasks are ---<b>{sprint_change_request_percentage}</b>---</div>
+</div>
+
+</body>
+</html>
