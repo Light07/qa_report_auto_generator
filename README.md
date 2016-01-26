@@ -13,3 +13,8 @@ Tag 2:
 2.User JIRA library to generate all the neeeded data, then embedded into data area of google charts.
 3.Use Flask to render a index page to let user input all the variables.
 4.Render the html file based on the template html file.
+
+Tag 3:
+1.Use Flask Completely.
+2.All the values are relay on user's input.
+3.User can run flask_main.py from terminal to start test sever to see the results.

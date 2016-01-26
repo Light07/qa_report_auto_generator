@@ -3,6 +3,7 @@ body {
   padding: 0;
   font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
   color: #444;
+
 }
 
 /*
@@ -21,12 +22,15 @@ header h1.logo {
   margin: 0;
   font-size: 1.7em;
   color: #fff;
+  text-align: left;
   text-transform: uppercase;
   float: left;
+
 }
 
 header h1.logo:hover {
   color: #fff;
+  text-align: left;
   text-decoration: none;
 }
 
@@ -92,11 +96,13 @@ form label {
   padding: 10px 0;
 }
 
+form input#project_name,
 form input#qa_resource,
 form input#username,
 form input#password,
 form input#board_id,
-form input#sprint_name{
+form select#sprint_name
+{
   width: 400px;
   background-color: #fafafa;
   -webkit-border-radius: 3px;
@@ -106,6 +112,7 @@ form input#sprint_name{
   padding: 5px;
   font-size: 1.1em;
 }
+
 form input#submit {
   display: block;
   -webkit-border-radius: 3px;

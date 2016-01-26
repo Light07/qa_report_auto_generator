@@ -1,9 +1,13 @@
 # -*- coding: utf-8 -*-
 
+# Why jira API is slow, check out:
+# https://jira.atlassian.com/browse/JRA-36224
+# https://jira.atlassian.com/browse/JRA-30170
+
 from DateTime import DateTime
 
 from jira.client import JIRA
-from settings import jira_options, project_name, board_id, delay_day, label
+import config
 
 __author__ = 'kevin.cai'
 
@@ -32,6 +36,9 @@ class JiraHelper(object):
         ChangeRequest = '"Change Request"'
         Defect = Bug + "," + LiveDefect
 
+    class Label:
+        auto = "AUTO"
+
     class TimeZone:
         Eastern = "US/Eastern"
         UTC = "UTC"
@@ -49,19 +56,45 @@ class JiraHelper(object):
             except Exception,e:
                 self.jira = None
 
-    def get_active_sprint_by_board_id(self, id_of_board):
+    def get_num_of_sprint_names_by_board_id(self, id_of_board, num=config.num_of_sprint_shown):
+        '''
+        return previous [number] of the sprint names that belong to given board id.
+        [number] = num_of_sprint_shown + 1
+        :param id_of_board:
+        :return:
+        '''
+        sp_list = []
+        sp_name = []
+        sp = self.jira.sprints(id_of_board)
+        active_sprint_id = None
+        for s in sp:
+            sp_list.append(s.raw['id'])
+            if s.raw["state"] == "ACTIVE":
+                active_sprint_id = s.raw['id']
+
+        current_index = sorted(sp_list).index(active_sprint_id)
+
+        target_sprint_list = sorted(sp_list)[current_index-num:current_index]
+        for s in sp:
+            if s.raw['id'] in target_sprint_list:
+                sp_name.append((str(s.raw['name']), str(s.raw['name'])))
+
+        return sp_name
+
+    def get_active_sprint_id_by_board_id(self, id_of_board):
         sp = self.jira.sprints(id_of_board)
         for i in sp:
-           if i.raw["state"] == "ACTIVE":
+            if i.raw["state"] == "ACTIVE":
                sprint_id = i.raw['id']
         return sprint_id
 
     def get_sprint_id_by_sprint_name(self, id_of_board, sprint_name):
+
         sp = self.jira.sprints(id_of_board)
         sprint_name = (str(sprint_name).strip()).lower()
         for item in sp:
             if unicode(item).encode('utf-8').strip().lower() == sprint_name:
-                return item.raw['id']
+                return int(item.raw['id'])
 
     def get_fix_version_by_sprint_id(self, sprint_id):
         '''
@@ -75,7 +108,7 @@ class JiraHelper(object):
                 if s.fields.fixVersions:
                     return str(s.fields.fixVersions[0])
 
-    def get_sprint_info(self, sprint_id, id_of_board=board_id):
+    def get_sprint_info(self, sprint_id, id_of_board):
         '''
 
         :param sprint_id:
@@ -100,8 +133,8 @@ class JiraHelper(object):
     def get_return_value_from_api_request(self, restful_string, property):
         return self.jira.find(restful_string, property).raw["issues"]
 
-    def html_get_actual_story_points_by_sprint(self, sprint_id):
-        all_story = self.get_standard_tasks_info_by_sprint(sprint_id)
+    def get_actual_story_points_by_sprint(self, sprint_id, project=config.project_name):
+        all_story = self.get_standard_tasks_info_by_sprint(sprint_id, project)
         story_point = 0
         for i in all_story:
             if i["Story_point"]:
@@ -122,7 +155,7 @@ class JiraHelper(object):
 
     def get_closed_task_num_group_by_date(self, j_query):
         '''
-
+        return the  date number pair with given jquery.
         :param : project = 'ATEAM' AND issuetype = bug and created >= {start_day} AND created <= {end_day} and sprint={}
         :return: return nested list [['2015-12-20', 5],['2015-12-30', 2]]
         '''
@@ -146,6 +179,7 @@ class JiraHelper(object):
 
     def get_total_bug_and_open_bug_num_by_time_period(self, j_query, end_day):
         '''
+         Get the total and still opened pair before end day.
         :param j_query: eg:
         "project = {project} AND issuetype in ({issue_type}) and created >= {start_day} AND created <= {end_day}
 
@@ -166,7 +200,7 @@ class JiraHelper(object):
                     number +=1
         return len(issue_ids), len(issue_ids) - number
 
-    def html_get_total_bug_and_open_bug_trend_by_sprint(self, sprint_id, id_of_board=board_id):
+    def html_get_total_bug_and_open_bug_trend_by_sprint(self, sprint_id, id_of_board=config.board_id, project=config.project_name):
         '''
         :param id_of_board:
         :param sprint_id:
@@ -175,9 +209,8 @@ class JiraHelper(object):
           ['2015-12-07', 0, 0], ['2015-12-08', 0, 0], ['2015-12-09', 0, 1], ['2015-12-10', 2, 3], ['2015-12-11', 3, 5], ['2015-12-12', 4, 6]
           ]
         '''
-        sprint_info = self.get_sprint_info(sprint_id)
-        # start_date = self.convert_time_zone(sprint_info["startDate"])
-        # end_date = self.convert_time_zone(sprint_info["endDate"])
+        sprint_info = self.get_sprint_info(sprint_id, id_of_board)
+
         start_date = DateTime(sprint_info["startDate"])
         end_date = DateTime(sprint_info["endDate"])
         current_date = DateTime(start_date)
@@ -187,11 +220,10 @@ class JiraHelper(object):
 
         while current_date <= end_date:
             j_query_string = '''project = {project} AND issuetype in ({issue_type}) and created >= {start_day} AND created <= {end_day}'''\
-                .format(project= project_name, issue_type= self.IssueType.Bug, start_day=start_date.asdatetime().strftime("%Y-%m-%d"), end_day=current_date.asdatetime().strftime("%Y-%m-%d"))
+                .format(project= project, issue_type= self.IssueType.Bug, start_day=start_date.asdatetime().strftime("%Y-%m-%d"), end_day=current_date.asdatetime().strftime("%Y-%m-%d"))
             temp_list = []
             temp_list.append(current_date.asdatetime().strftime("%Y-%m-%d"))
-            # total_number = self.get_total_bug_and_open_bug_num_by_time_period(j_query_string, current_date.asdatetime().strftime("%Y-%m-%d"))[0]
-            # opened_number = self.get_total_bug_and_open_bug_num_by_time_period(j_query_string, current_date.asdatetime().strftime("%Y-%m-%d"))[1]
+
             bug_number_info = self.get_total_bug_and_open_bug_num_by_time_period(j_query_string, current_date)
             total_number = bug_number_info[0]
             opened_number = bug_number_info[1]
@@ -215,7 +247,7 @@ class JiraHelper(object):
         return issue_dict
 
     def get_task_info_by_query_string(self, j_query):
-        all_ids = self.get_task_id_by_query_string(j_query)
+        all_ids = self.jira.search_issues(j_query)
         task_info = []
         for id in all_ids:
             task_info.append(self.get_task_info_by_id(id))
@@ -227,105 +259,110 @@ class JiraHelper(object):
             issue_list.append(item)
         return issue_list
 
-    def get_automation_found_bug_info_by_sprint(self, sprint_id):
+    def get_automation_found_bug_info_by_sprint(self, sprint_id, id_of_board_id=config.board_id, project=config.project_name):
         '''
         All the automation bug will be marked with label AUTO
         :param sprint_id:
         :return:
         '''
-        bug_query_string = '''project = "{project}" AND issuetype in ({issue_type}) and labels = "{label}" and sprint = {sprint}'''.format(project=project_name, issue_type=self.IssueType.Defect, label=label, sprint=sprint_id)
+        start_day = self.get_sprint_start_end_day(sprint_id, id_of_board_id)["start_day"]
+        end_day = self.get_sprint_start_end_day(sprint_id, id_of_board_id)["end_day"]
+        bug_query_string = '''project = "{project}" AND issuetype in ({issue_type}) and labels = "{label}" and created >="{start_day}" and  created <="{end_day}" '''.format(project=project, issue_type=self.IssueType.Defect, label=self.Label.auto, start_day=start_day, end_day=end_day)
         return self.get_task_info_by_query_string(bug_query_string)
 
-    def get_automation_found_bug_id_by_sprint(self, sprint_id):
-        bug_query_string = '''project = "{project}" AND issuetype in ({issue_type}) and labels = "{label}" and sprint = {sprint}'''.format(project=project_name, issue_type=self.IssueType.Defect, label=label, sprint=sprint_id)
+    def get_automation_found_bug_id_by_sprint(self, sprint_id, id_of_board_id=config.board_id, project=config.project_name):
+        start_day = self.get_sprint_start_end_day(sprint_id, id_of_board_id)["start_day"]
+        end_day = self.get_sprint_start_end_day(sprint_id, id_of_board_id)["end_day"]
+        bug_query_string = '''project = "{project}" AND issuetype in ({issue_type}) and labels = "{label}" and created >="{start_day}" and  created <="{end_day}" '''.format(project=project, issue_type=self.IssueType.Defect, label=self.Label.auto, start_day=start_day, end_day=end_day)
         return self.get_task_id_by_query_string(bug_query_string)
 
-    def get_bug_info_by_sprint(self, sprint_id):
+    def get_sprint_start_end_day(self, sprint_id, id_of_board_id=config.board_id):
         '''
-        sprint completed will replaced by due date if sprint is currently active.
+        if sprint is still active, end_day is planned end day.
         :param sprint_id:
         :return:
         '''
-        sprint_info = self.get_sprint_info(sprint_id)
-        # start_day = self.convert_time_zone(sprint_info["startDate"]).asdatetime().strftime("%Y-%m-%d")
-        # end_day = self.convert_time_zone(sprint_info["completeDate"]).asdatetime().strftime("%Y-%m-%d")
-        start_day = DateTime(sprint_info["startDate"]).asdatetime().strftime("%Y-%m-%d")
-        if str(sprint_info["completeDate"]) != "None":
-            end_day = DateTime(sprint_info["completeDate"]).asdatetime().strftime("%Y-%m-%d")
-        else:
-            end_day = DateTime(sprint_info["endDate"]).asdatetime().strftime("%Y-%m-%d")
+        result_dict = {}
+        sprint_info = self.get_sprint_info(sprint_id, id_of_board_id)
 
-        bug_query_string = '''project = "{project}" AND issuetype in ({issue_type}) and created >="{start_day}" and  created <="{end_day}" '''.format(project=project_name, issue_type=self.IssueType.Bug, start_day=start_day, end_day=end_day)
+        result_dict["start_day"] = DateTime(sprint_info["startDate"]).asdatetime().strftime("%Y-%m-%d")
+        if str(sprint_info["completeDate"]) != "None":
+            result_dict["end_day"] = DateTime(sprint_info["completeDate"]).asdatetime().strftime("%Y-%m-%d")
+        else:
+            result_dict["end_day"] = DateTime(sprint_info["endDate"]).asdatetime().strftime("%Y-%m-%d")
+
+        return result_dict
+
+    def get_bug_info_by_sprint(self, sprint_id, id_of_board_id=config.board_id,  project=config.project_name):
+        '''
+        sprint completed will replaced by due date if sprint bis currently active.
+        :param sprint_id:
+        :return:
+        '''
+        start_day = self.get_sprint_start_end_day(sprint_id, id_of_board_id)["start_day"]
+        end_day = self.get_sprint_start_end_day(sprint_id, id_of_board_id)["end_day"]
+        bug_query_string = '''project = "{project}" AND issuetype in ({issue_type}) and created >="{start_day}" and  created <="{end_day}" '''.format(project=project, issue_type=self.IssueType.Bug, start_day=start_day, end_day=end_day)
         return self.get_task_info_by_query_string(bug_query_string)
 
-    def get_bug_id_by_sprint(self, sprint_id):
-        sprint_info = self.get_sprint_info(sprint_id)
-        start_day = self.convert_time_zone(sprint_info["startDate"]).asdatetime().strftime("%Y-%m-%d")
-        if str(sprint_info["completeDate"]) != "None":
-            end_day = DateTime(sprint_info["completeDate"]).asdatetime().strftime("%Y-%m-%d")
-        else:
-            end_day = DateTime(sprint_info["endDate"]).asdatetime().strftime("%Y-%m-%d")
-
-        bug_query_string = '''project = "{project}" AND issuetype in ({issue_type}) and created >="{start_day}" and  created <="{end_day}" '''.format(project=project_name, issue_type=self.IssueType.Bug, start_day=start_day, end_day=end_day)
+    def get_bug_id_by_sprint(self, sprint_id, id_of_board_id=config.board_id, project=config.project_name):
+        start_day = self.get_sprint_start_end_day(sprint_id, id_of_board_id)["start_day"]
+        end_day = self.get_sprint_start_end_day(sprint_id, id_of_board_id)["end_day"]
+        bug_query_string = '''project = "{project}" AND issuetype in ({issue_type}) and created >="{start_day}" and  created <="{end_day}" '''.format(project=project, issue_type=self.IssueType.Bug, start_day=start_day, end_day=end_day)
         return self.get_task_id_by_query_string(bug_query_string)
 
-    def get_live_defect_info_by_sprint(self, sprint_id):
-        live_defect_query_string = '''project = "{project}" AND issuetype in ({issue_type}) and sprint = {sprint}'''.format(project=project_name, issue_type=self.IssueType.LiveDefect, sprint=sprint_id)
+    def get_live_defect_info_by_sprint(self, sprint_id, project=config.project_name):
+        live_defect_query_string = '''project = "{project}" AND issuetype in ({issue_type}) and sprint = {sprint}'''.format(project=project, issue_type=self.IssueType.LiveDefect, sprint=sprint_id)
         return self.get_task_info_by_query_string(live_defect_query_string)
 
-    def get_live_defect_id_by_sprint(self, sprint_id):
-        live_defect_query_string = '''project = "{project}" AND issuetype in ({issue_type}) and sprint = {sprint}'''.format(project=project_name, issue_type=self.IssueType.LiveDefect, sprint=sprint_id)
+    def get_live_defect_id_by_sprint(self, sprint_id, project=config.project_name):
+        live_defect_query_string = '''project = "{project}" AND issuetype in ({issue_type}) and sprint = {sprint}'''.format(project=project, issue_type=self.IssueType.LiveDefect, sprint=sprint_id)
         return self.get_task_id_by_query_string(live_defect_query_string)
 
-    def get_change_request_info_by_sprint(self, sprint_id):
-        change_request_query_string = '''project = "{project}" AND issuetype in ({issue_type}) and sprint = {sprint}'''.format(project=project_name, issue_type=self.IssueType.ChangeRequest, sprint=sprint_id)
+    def get_change_request_info_by_sprint(self, sprint_id, project=config.project_name):
+        change_request_query_string = '''project = "{project}" AND issuetype in ({issue_type}) and sprint = {sprint}'''.format(project=project, issue_type=self.IssueType.ChangeRequest, sprint=sprint_id)
         return self.get_task_info_by_query_string(change_request_query_string)
 
-    def get_change_request_id_by_sprint(self, sprint_id):
-        change_request_query_string = '''project = "{project}" AND issuetype in ({issue_type}) and sprint = {sprint}'''.format(project=project_name, issue_type=self.IssueType.ChangeRequest, sprint=sprint_id)
+    def get_change_request_id_by_sprint(self, sprint_id, project=config.project_name):
+        change_request_query_string = '''project = "{project}" AND issuetype in ({issue_type}) and sprint = {sprint}'''.format(project=project, issue_type=self.IssueType.ChangeRequest, sprint=sprint_id)
         return self.get_task_id_by_query_string(change_request_query_string)
 
-    def get_standard_tasks_info_by_sprint(self, sprint_id):
-        standard_type_query = '''project = "{project}" AND issuetype in ({issue_type}) and sprint = {sprint}'''.format(project=project_name, issue_type=self.IssueType.StandardType, sprint=sprint_id)
+    def get_standard_tasks_info_by_sprint(self, sprint_id, project=config.project_name):
+        standard_type_query = '''project = "{project}" AND issuetype in ({issue_type}) and sprint = {sprint}'''.format(project=project, issue_type=self.IssueType.StandardType, sprint=sprint_id)
         return self.get_task_info_by_query_string(standard_type_query)
 
-    def get_standard_tasks_id_by_sprint(self, sprint_id):
-        standard_type_query = '''project = "{project}" AND issuetype in ({issue_type}) and sprint = {sprint}'''.format(project=project_name, issue_type=self.IssueType.StandardType, sprint=sprint_id)
+    def get_standard_tasks_id_by_sprint(self, sprint_id, project=config.project_name):
+        standard_type_query = '''project = "{project}" AND issuetype in ({issue_type}) and sprint = {sprint}'''.format(project=project, issue_type=self.IssueType.StandardType, sprint=sprint_id)
         return self.get_task_id_by_query_string(standard_type_query)
 
-    def get_story_info_by_sprint(self, sprint_id):
-        story_type_query = '''project = "{project}" AND issuetype in ({issue_type}) and sprint = {sprint}'''.format(project=project_name, issue_type=self.IssueType.Story, sprint=sprint_id)
+    def get_story_info_by_sprint(self, sprint_id, project=config.project_name):
+        story_type_query = '''project = "{project}" AND issuetype in ({issue_type}) and sprint = {sprint}'''.format(project=project, issue_type=self.IssueType.Story, sprint=sprint_id)
         return self.get_task_info_by_query_string(story_type_query)
 
-    def get_story_id_by_sprint(self, sprint_id):
-        story_type_query = '''project = "{project}" AND issuetype in ({issue_type}) and sprint = {sprint}'''.format(project=project_name, issue_type=self.IssueType.Story, sprint=sprint_id)
+    def get_story_id_by_sprint(self, sprint_id, project=config.project_name):
+        story_type_query = '''project = "{project}" AND issuetype in ({issue_type}) and sprint = {sprint}'''.format(project=project, issue_type=self.IssueType.Story, sprint=sprint_id)
         return self.get_task_id_by_query_string(story_type_query)
 
-    def get_tasks_removed_from_current_sprint(self, sprint_id):
+    def get_tasks_removed_from_current_sprint(self, sprint_id, project=config.project_name):
         fixversion = self.get_fix_version_by_sprint_id(sprint_id)
-        task_removed_query = '''project = "{project}" AND issuetype in ({issue_type}) and fixversion was in "{fixversion}" and fixversion !="{fixversion}"'''.format(project=project_name, issue_type=self.IssueType.StandardType, fixversion=fixversion)
+        task_removed_query = '''project = "{project}" AND issuetype in ({issue_type}) and fixversion was in "{fixversion}" and fixversion !="{fixversion}"'''.format(project=project, issue_type=self.IssueType.StandardType, fixversion=fixversion)
         return self.get_task_info_by_query_string(task_removed_query)
 
-    def get_bugs_not_found_in_sprint_but_closed_in_sprint(self, sprint_id):
-        sprint_info = self.get_sprint_info(sprint_id)
-        start_day = DateTime(sprint_info["startDate"]).asdatetime().strftime("%Y-%m-%d")
-        if str(sprint_info["completeDate"]) != "None":
-            end_day = DateTime(sprint_info["completeDate"]).asdatetime().strftime("%Y-%m-%d")
-        else:
-            end_day = DateTime(sprint_info["endDate"]).asdatetime().strftime("%Y-%m-%d")
-        bug_query_string = '''project = "{project}" AND issuetype in ({issue_type}) and created <"{start_day}" and  resolved>="{start_day}" and resolved <="{end_day}" and status = {status} '''.format(project=project_name, issue_type=self.IssueType.Bug, start_day=start_day, end_day=end_day, status=self.BugStatus.closed)
+    def get_bugs_not_found_in_sprint_but_closed_in_sprint(self, sprint_id, id_of_board_id=config.board_id, project=config.project_name):
+        start_day = self.get_sprint_start_end_day(sprint_id, id_of_board_id)["start_day"]
+        end_day = self.get_sprint_start_end_day(sprint_id, id_of_board_id)["end_day"]
+        bug_query_string = '''project = "{project}" AND issuetype in ({issue_type}) and created <"{start_day}" and  resolved>="{start_day}" and resolved <="{end_day}" and status = {status} '''.format(project=project, issue_type=self.IssueType.Bug, start_day=start_day, end_day=end_day, status=self.BugStatus.closed)
         return self.get_task_info_by_query_string(bug_query_string)
 
-    def get_task_id_that_has_linked_task(self, sprint_id):
-        all_ids = self.get_bug_id_by_sprint(sprint_id)
+    def get_task_id_that_has_linked_task(self, sprint_id, id_of_board_id=config.board_id, project=config.project_name):
+        all_ids = self.get_bug_id_by_sprint(sprint_id, id_of_board_id, project)
         task_id = []
         for id in all_ids:
             if self.get_id_and_linked_id_dict(id):
                 task_id.append(self.get_id_and_linked_id_dict(id)["id"])
         return task_id
 
-    def get_task_info_that_has_linked_task(self, sprint_id):
-        ids = self.get_task_id_that_has_linked_task(sprint_id)
+    def get_task_info_that_has_linked_task(self, sprint_id, id_of_board_id=config.board_id, project=config.project_name):
+        ids = self.get_task_id_that_has_linked_task(sprint_id, id_of_board_id, project)
         info_list = []
         for id in ids:
             info_list.append(self.get_task_info_by_id(id))
@@ -346,17 +383,17 @@ class JiraHelper(object):
                     issue_dict['linked_id'] = temp_list
         return issue_dict
 
-    def get_id_and_linked_id_by_sprint(self, sprint_id):
-        ids = self.get_standard_tasks_id_by_sprint(sprint_id)
+    def get_id_and_linked_id_by_sprint(self, sprint_id, project=config.project_name):
+        ids = self.get_standard_tasks_id_by_sprint(sprint_id, project)
         result_list = []
         for id in ids:
             if self.get_id_and_linked_id_dict(id):
                 result_list.append(self.get_id_and_linked_id_dict(id))
         return result_list
 
-    def get_linked_task_id_by_sprint(self, sprint_id):
+    def get_linked_task_id_by_sprint(self, sprint_id, project=config.project_name):
         id_list = []
-        for item in self.get_id_and_linked_id_by_sprint(sprint_id):
+        for item in self.get_id_and_linked_id_by_sprint(sprint_id, project):
             id_list.append(item["linked_id"])
         return id_list
 
@@ -368,11 +405,11 @@ class JiraHelper(object):
                  result_list.append(self.get_task_info_by_id(i))
          return result_list
 
-    def get_linked_task_info_by_sprint(self, sprint_id):
+    def get_linked_task_info_by_sprint(self, sprint_id, project=config.project_name):
         '''
         Return all the linked task detail info if the stories in given sprint has/have linked tasks.
         '''
-        all_ids = self.get_linked_task_id_by_sprint(sprint_id)
+        all_ids = self.get_linked_task_id_by_sprint(sprint_id, project)
         issue_list =[]
         for id in all_ids:
             for i in id:
@@ -418,7 +455,7 @@ class JiraHelper(object):
                 new_list.append(l)
         return new_list
 
-    def html_get_share_ratio_by_priority(self, sprint_id, title="PriorityCategory", value="Numbers"):
+    def html_get_share_ratio_by_priority(self, sprint_id, id_of_board_id=config.board_id,  project=config.project_name):
         '''
         :param sprint_id:
         :return:
@@ -430,12 +467,15 @@ class JiraHelper(object):
             ['Minor', 2]
             ]
         '''
-        issue_list = self.get_bug_info_by_sprint(sprint_id)
-        issue_dict = self.get_issue_num_group_by_Category(issue_list)
+        category="Priority"
+        title="PriorityCategory"
+        value="Numbers"
+        issue_list = self.get_bug_info_by_sprint(sprint_id, id_of_board_id, project)
+        issue_dict = self.get_issue_num_group_by_Category(issue_list, category)
         issue_dict[title] = value
         return self.convert_dict_to_str_list(issue_dict)
 
-    def html_get_share_ratio_detail_by_priority(self, sprint_id):
+    def html_get_share_ratio_detail_by_priority(self, sprint_id, id_of_board_id=config.board_id,  project=config.project_name):
         '''
 
         :param sprint_id:
@@ -446,11 +486,11 @@ class JiraHelper(object):
          ['Minor', ['ATEAM-3921', 'ATEAM-3920']]]
 
         '''
-        issue_list = self.get_bug_info_by_sprint(sprint_id)
+        issue_list = self.get_bug_info_by_sprint(sprint_id, id_of_board_id, project)
         issue_list = self.get_issue_key_group_by_priority(issue_list)
         return str(issue_list).replace("u", "")
 
-    def get_issue_num_group_by_Category(self, bug_list, category="Priority"):
+    def get_issue_num_group_by_Category(self, bug_list, category):
         '''
         The category must be the item of the tasks, like  "Key", "Id", "Summary", "Priority", "Status", "Created", "Story_point"
         :param bug_list:
@@ -499,11 +539,11 @@ class JiraHelper(object):
 
         return story_dict_with_linked_issue
 
-    def html_get_linked_issue_detail_group_by_story(self, sprint_id, id_has_linked_id):
+    def html_get_linked_issue_detail_group_by_story(self, sprint_id, id_has_linked_id, id_of_board_id=config.board_id, project=config.project_name):
         dict_result = self.get_linked_issue_detail_group_by_story(id_has_linked_id)
         str_format_result = {}
         story_related_issue_id = []
-        story_related_issue_detail = None
+
         no_story_related_issue = []
 
         for k in dict_result.iterkeys():
@@ -517,13 +557,13 @@ class JiraHelper(object):
             for v in str_format_result[k]:
                 story_related_issue_id.append(v)
 
-        all_bug_id = self.get_bug_id_by_sprint(sprint_id)
+        all_bug_id = self.get_bug_id_by_sprint(sprint_id, id_of_board_id, project)
         for id in all_bug_id:
             if str(id) not in story_related_issue_id:
                 no_story_related_issue.append(str(id))
         return story_related_issue_detail, no_story_related_issue
 
-    def html_get_linked_issue_num_group_by_story(self, task_id_list_has_linked_task, title="Story", value="BugNum"):
+    def html_get_linked_issue_num_group_by_story(self, task_id_list_has_linked_task):
         '''
 
         :param task_id_list_has_linked_task:
@@ -538,6 +578,8 @@ class JiraHelper(object):
             [u'ATEAM-3884', 1]
         ]
         '''
+        title="Story"
+        value="BugNum"
         nested_lists = []
         title_list =[]
 
@@ -554,15 +596,15 @@ class JiraHelper(object):
 
         return str(nested_lists).replace("u", "")
 
-    def html_get_live_defect_percentage_of_all_defects(self, sprint_id):
-        live_defect_num = len(self.get_live_defect_id_by_sprint(sprint_id))
-        all_defect_num = len(self.get_bug_id_by_sprint(sprint_id)) + live_defect_num
+    def html_get_live_defect_percentage_of_all_defects(self, sprint_id, id_of_board_id=config.board_id, project=config.project_name):
+        live_defect_num = len(self.get_live_defect_id_by_sprint(sprint_id, project))
+        all_defect_num = len(self.get_bug_id_by_sprint(sprint_id, id_of_board_id, project)) + live_defect_num
 
         return self.calculate_task_percentage(live_defect_num, all_defect_num)
 
-    def html_get_change_request_percentage_of_all_defects(self, sprint_id):
-        all_tasks = len(self.get_standard_tasks_id_by_sprint(sprint_id))
-        change_request = len(self.get_change_request_id_by_sprint(sprint_id))
+    def html_get_change_request_percentage_of_all_defects(self, sprint_id, project=config.project_name):
+        all_tasks = len(self.get_standard_tasks_id_by_sprint(sprint_id, project))
+        change_request = len(self.get_change_request_id_by_sprint(sprint_id, project))
         return self.calculate_task_percentage(change_request, all_tasks)
 
     def calculate_task_percentage(self, target_task_num, total_task_num):
@@ -572,9 +614,9 @@ class JiraHelper(object):
             percentage = float(target_task_num)/float(total_task_num)
             return format(percentage, '.2%')
 
-    def html_get_automation_found_bug_percentange(self, sprint_id):
-        all_defect_num = len(self.get_bug_id_by_sprint(sprint_id))
-        auto_bug = len(self.get_automation_found_bug_info_by_sprint(sprint_id))
+    def html_get_automation_found_bug_percentange(self, sprint_id, id_of_board_id=config.board_id, project=config.project_name):
+        all_defect_num = len(self.get_bug_id_by_sprint(sprint_id, id_of_board_id, project))
+        auto_bug = len(self.get_automation_found_bug_info_by_sprint(sprint_id, id_of_board_id, project))
         return self.calculate_task_percentage(auto_bug, all_defect_num)
 
     def get_issue_key_group_by_priority(self, bug_list):
@@ -619,13 +661,12 @@ class JiraHelper(object):
         us_standard_time = DateTime(date_time)
         return DateTime(us_standard_time).toZone(target_time_format)
 
-    def html_get_sprint_status(self, sprint_id, id_of_board=board_id):
+    def html_get_sprint_status(self, sprint_id, id_of_board=config.board_id):
         sprint_info = self.get_sprint_info(sprint_id, id_of_board)
         status = None
         if str(sprint_info["completeDate"]) != str(status):
-            if DateTime(sprint_info["completeDate"]) < DateTime(sprint_info["endDate"]) +delay_day:
+            if DateTime(sprint_info["completeDate"]) < DateTime(sprint_info["endDate"]) + config.delay_day:
                 status = "success"
             else:
                 status = "fail"
         return status
-

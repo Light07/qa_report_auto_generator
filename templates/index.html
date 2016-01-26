@@ -1,48 +1,53 @@
-{% extends "layout.html" %}
+{% extends "layout_template.html" %}
+
+{% block head %}
+    {{ super() }}
+{% endblock %}
+
 {% block content %}
+    {{ super() }}
+    <br />
+    <br />
+    <form action = "{{url_for('index')}}"  method="POST" name="form" >
+        {{ form.hidden_tag() }}
 
-  <!--{% for message in get_flashed_messages() %}-->
-    <!--<div class="flash">{{ message }}</div>-->
-  <!--{% endfor %}-->
+        {% for message in form.project_name.errors %}
+          <div class="flash">{{ message }}</div>
+        {% endfor %}
 
-    {% for message in form.qa_resource.errors %}
-      <div class="flash">{{ message }}</div>
-    {% endfor %}
+        {% for message in form.qa_resource.errors %}
+          <div class="flash">{{ message }}</div>
+        {% endfor %}
 
-    {% for message in form.username.errors %}
-      <div class="flash">{{ message }}</div>
-    {% endfor %}
+        {% for message in form.username.errors %}
+          <div class="flash">{{ message }}</div>
+        {% endfor %}
 
-    {% for message in form.password.errors %}
-      <div class="flash">{{ message }}</div>
-    {% endfor %}
+        {% for message in form.password.errors %}
+          <div class="flash">{{ message }}</div>
+        {% endfor %}
 
-    {% for message in form.board_id.errors %}
-      <div class="flash">{{ message }}</div>
-    {% endfor %}
+        {% for message in form.board_id.errors %}
+          <div class="flash">{{ message }}</div>
+        {% endfor %}
 
-    {% for message in form.sprint_name.errors %}
-      <div class="flash">{{ message }}</div>
-    {% endfor %}
+        {{ form.username.label }}
+            {{form.username(id='username')}}
 
-    <form action = "{{url_for('index')}}"  method="POST" >
-    {{ form.hidden_tag() }}
+        {{ form.password.label }}
+            {{form.password(id='password')}}
 
-    {{ form.qa_resource.label }}
-        {{form.qa_resource(id='qa_resource')}}
+       {{ form.project_name.label }}
+            {{form.project_name(id='project_name')}}
 
-    {{ form.username.label }}
-        {{form.username(id='username')}}
+        {{ form.board_id.label }}
+            {{form.board_id(id='board_id')}}
 
-    {{ form.password.label }}
-        {{form.password(id='password')}}
+        {{ form.qa_resource.label }}
+            {{form.qa_resource(id='qa_resource')}}
 
-    {{ form.board_id.label }}
-        {{form.board_id(id='board_id')}}
-
-    {{ form.sprint_name.label }}
-        {{form.sprint_name(id='sprint_name')}}
-
-        {{form.submit(id='submit')}}
+        <br />
+        <br />
+            {{form.submit(id='submit')}}
     </form>
 {% endblock %}

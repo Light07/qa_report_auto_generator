@@ -160,8 +160,13 @@
 
 </head>
 <body>
-<div class="page-header" style=" text-align:center;">
+<div class="page-header" style=" text-align:center; ">
   <h1>ASD Sprint Report - <body>{{sprint_name_string|safe}}</body></h1>
+        <nav>
+        <ul class="menu">
+            <li  style=" text-align:right;"><a href="{{ url_for('success') }}">DownLoad Sprint Report</a></li>
+        </ul>
+    </nav>
     <h5>QA resource:"{{qa_resource|safe}}"</h5>
 </div>
 

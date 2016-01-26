@@ -1,0 +1,61 @@
+{% extends "layout_template.html" %}
+
+{% block head %}
+    {{ super() }}
+{% endblock %}
+
+
+{% block content %}
+    {{ super() }}
+    <form action = "{{url_for('get_sprint_list')}}"  method="POST" name="form" >
+    {{ form.hidden_tag() }}
+
+    {% for message in form.project_name.errors %}
+      <div class="flash">{{ message }}</div>
+    {% endfor %}
+
+    {% for message in form.qa_resource.errors %}
+      <div class="flash">{{ message }}</div>
+    {% endfor %}
+
+    {% for message in form.username.errors %}
+      <div class="flash">{{ message }}</div>
+    {% endfor %}
+
+    {% for message in form.password.errors %}
+      <div class="flash">{{ message }}</div>
+    {% endfor %}
+
+    {% for message in form.board_id.errors %}
+      <div class="flash">{{ message }}</div>
+    {% endfor %}
+
+    {% for message in form.sprint_name.errors %}
+      <div class="flash">{{ message }}</div>
+    {% endfor %}
+
+    {{ form.username.label }}
+        {{form.username(id='username')}}
+
+    {{ form.password.label }}
+        {{form.password(id='password')}}
+
+   {{ form.project_name.label }}
+        {{form.project_name(id='project_name')}}
+
+    {{ form.board_id.label }}
+        {{form.board_id(id='board_id')}}
+
+    {{ form.sprint_name.label }}
+        <select name="sprint_name" >
+            {% for o in form.sprint_name.choices %}
+            <option name="{{ o[0]}}" SELECTED>{{ o[1] }}</option>
+            {% endfor %}
+        </select>
+
+    {{ form.qa_resource.label }}
+        {{form.qa_resource(id='qa_resource')}}
+
+        {{form.submit(id='submit')}}
+    </form>
+{% endblock %}
