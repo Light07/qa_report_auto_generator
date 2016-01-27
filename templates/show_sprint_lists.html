@@ -7,7 +7,7 @@
 
 {% block content %}
     {{ super() }}
-    <p>This process will going to take 5 minutes, please be patient :)</p>
+    <p><b>This process will going to take 5 minutes, please be patient :)</b></p>
     <form action = "{{url_for('get_sprint_list')}}"  method="POST" name="form" >
     {{ form.hidden_tag() }}
 
