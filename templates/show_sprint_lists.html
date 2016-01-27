@@ -7,6 +7,7 @@
 
 {% block content %}
     {{ super() }}
+    <p>This process will going to take 5 minutes, please be patient :)</p>
     <form action = "{{url_for('get_sprint_list')}}"  method="POST" name="form" >
     {{ form.hidden_tag() }}
 
@@ -58,4 +59,11 @@
 
         {{form.submit(id='submit')}}
     </form>
+    <div class="Note">
+    <p>Note:</p>
+    <p>①Jira API has known performance issues when return issues based on JQL filter, this is the root reason why this slow. <br />
+     ②You need to have access to google, otherwise you can not see the charts/trends completely  </p>
+</div>
 {% endblock %}
+
+

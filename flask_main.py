@@ -18,7 +18,6 @@ def index():
             session['qa_resource'] = form.qa_resource.data
             session['username'] = form.username.data
             session['password'] = form.password.data
-
             session['board_id'] = form.board_id.data
             session["project_name"] = form.project_name.data
 
