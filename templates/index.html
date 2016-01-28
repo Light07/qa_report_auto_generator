@@ -5,6 +5,7 @@
 {% endblock %}
 
 {% block content %}
+
     {{ super() }}
     <br />
     <br />
@@ -31,23 +32,65 @@
           <div class="flash">{{ message }}</div>
         {% endfor %}
 
-        {{ form.username.label }}
-            {{form.username(id='username')}}
+        <div class="row">
+            {{ form.username.label }}
+                {{form.username(id='username')}}
+         </div>
 
+        <div class="row">
         {{ form.password.label }}
             {{form.password(id='password')}}
+        </div>
 
-       {{ form.project_name.label }}
+       <div class="row">
+            {{ form.project_name.label }}
+            <img src="/static/images/project_name_help.gif" style="display: none" />
             {{form.project_name(id='project_name')}}
+       </div>
 
-        {{ form.board_id.label }}
+        <div class="row">
+            {{ form.board_id.label }}
+            <img src="/static/images/board_id_help.gif" style="display: none" />
             {{form.board_id(id='board_id')}}
-
-        {{ form.qa_resource.label }}
+        </div>
+        <div class="row">
+            {{ form.qa_resource.label }}
             {{form.qa_resource(id='qa_resource')}}
-
+        </div>
         <br />
         <br />
             {{form.submit(id='submit')}}
     </form>
+
+<style>
+    .row {
+     position: relative;
+    }
+    .row > img {
+      position: absolute;
+      top: 10px;
+      left: 450px;
+      max-width: 500px;
+    }
+</style>
+
+<script>
+    window.onload = function() {
+      [].slice.call(document.querySelectorAll('form label')).forEach(function(labelEl) {
+        labelEl.addEventListener('mouseenter', function(event) {
+           var nextElement =  event.target.nextElementSibling;
+           if (nextElement.tagName === 'IMG') {
+            nextElement.style.display = 'inline-block';
+           }
+        });
+        labelEl.addEventListener('mouseleave', function(event) {
+           var nextElement =  event.target.nextElementSibling;
+           if (nextElement.tagName === 'IMG') {
+            nextElement.style.display = 'none';
+           }
+        });
+      });
+    }
+</script>
+
 {% endblock %}

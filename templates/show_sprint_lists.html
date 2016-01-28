@@ -4,10 +4,10 @@
     {{ super() }}
 {% endblock %}
 
-
 {% block content %}
+<div id="loading" style="display: none; text-align: center; padding-top: 50px;"><img src="static/images/loading.gif" ></div>
+<div id="content">
     {{ super() }}
-    <p><b>This process will going to take 5 minutes, please be patient :)</b></p>
     <form action = "{{url_for('get_sprint_list')}}"  method="POST" name="form" >
     {{ form.hidden_tag() }}
 
@@ -61,8 +61,20 @@
     </form>
     <div class="Note">
     <p>Note:</p>
-    <p>①Jira API has known performance issues when return issues based on JQL filter, this is the root reason why this slow. <br />
-     ②You need to have access to google, otherwise you can not see the charts/trends completely  </p>
+
+    <p> ①<b>This process will going to take 5 minutes, please be patient :)</b><br />
+        ②The root cause is Jira API has known performance issues when return issues based on JQL filter.<br />
+        ③You need to have access to google, otherwise you can not see the charts/trends completely.</p>
+</div>
+<script>
+    function preloader(){
+        document.getElementById("loading").style.display = "block";
+        document.getElementById("content").style.display = "none";
+    }
+    window.onload = function() {
+      document.querySelector('form').onsubmit = preloader;
+    }
+</script>
 </div>
 {% endblock %}
 

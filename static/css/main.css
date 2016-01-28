@@ -94,6 +94,7 @@ form label {
   font-weight: bold;
   display: block;
   padding: 10px 0;
+  position: relative;
 }
 
 form input#project_name,

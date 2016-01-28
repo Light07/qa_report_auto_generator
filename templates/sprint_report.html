@@ -8,6 +8,7 @@
         .fail {
             color: red;
         }
+
     </style>
     <script type="text/javascript" src="https://www.google.com/jsapi"></script>
     <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
@@ -160,6 +161,8 @@
 
 </head>
 <body>
+<div id="loading"></div>
+<div id="content">
 <div class="page-header" style=" text-align:center; ">
   <h1>ASD Sprint Report - <body>{{sprint_name_string|safe}}</body></h1>
         <nav>
@@ -218,6 +221,7 @@
         <div id="change_request_div"> Change Request</div>
         <br />
         <div>The percentage of change request of all the tasks are ---<b>{{sprint_change_request_percentage|safe}}</b>---</div>
+</div>
 </div>
 
 </body>
