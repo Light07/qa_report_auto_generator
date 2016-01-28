@@ -69,12 +69,14 @@ class JiraHelper(object):
         active_sprint_id = None
         for s in sp:
             sp_list.append(s.raw['id'])
+
             if s.raw["state"] == "ACTIVE":
                 active_sprint_id = s.raw['id']
 
         current_index = sorted(sp_list).index(active_sprint_id)
 
-        target_sprint_list = sorted(sp_list)[current_index-num:current_index]
+        target_sprint_list = sorted(sp_list)[current_index-num-1:current_index +1]
+
         for s in sp:
             if s.raw['id'] in target_sprint_list:
                 sp_name.append((str(s.raw['name']), str(s.raw['name'])))
@@ -670,3 +672,8 @@ class JiraHelper(object):
             else:
                 status = "fail"
         return status
+
+
+if __name__ =="__main__":
+    jira = JiraHelper(config.jira_options, config.jira_account)
+    print jira.get_num_of_sprint_names_by_board_id(60)
