@@ -153,7 +153,56 @@ class JiraHelper(object):
                     if item.toString == 'Closed':
                         closed_date = history.created
                         # closed_date = self.convert_time_zone(history.created)
+        if issue.fields.status == 'Closed':
+            return closed_date
+        else:
+            return None
+
+    def get_issue_closed_status_by_date(self, id, date):
+        issue = self.jira.issue(id, expand='changelog')
+        change_log = issue.changelog
+        closed_date = None
+        for history in change_log.histories:
+            for item in history.items:
+                if item.field == 'status':
+                    if item.toString == 'Closed':
+                        closed_date = history.created
+
+        if closed_date:
+            if DateTime(closed_date) > DateTime(date):
+                return None
         return closed_date
+
+    def get_issue_resoved_status_by_date(self, id, date):
+        issue = self.jira.issue(id, expand='changelog')
+        change_log = issue.changelog
+        resolved_date = None
+        for history in change_log.histories:
+            for item in history.items:
+                if item.field == 'status':
+                    if item.toString == 'Resolved':
+                        resolved_date = history.created
+
+        if resolved_date:
+            if DateTime(resolved_date) > DateTime(date):
+                return None
+        return resolved_date
+
+
+    def get_issue_resoved_date_by_id(self, id):
+        issue = self.jira.issue(id, expand='changelog')
+        change_log = issue.changelog
+        resolved_date = None
+        for history in change_log.histories:
+            for item in history.items:
+                if item.field == 'status':
+                    if item.toString == 'Resolved':
+                        resolved_date = history.created
+
+        if issue.fields.status == 'Closed':
+            return resolved_date
+        else:
+            return None
 
     def get_closed_task_num_group_by_date(self, j_query):
         '''
@@ -162,6 +211,7 @@ class JiraHelper(object):
         :return: return nested list [['2015-12-20', 5],['2015-12-30', 2]]
         '''
         issue_ids = self.get_task_id_by_query_string(j_query)
+        print issue_ids
         key_date_dict = {}
         date_key_dict = {}
         target_list = []
@@ -179,28 +229,32 @@ class JiraHelper(object):
             target_list.append(temp_list)
         return  sorted(target_list)
 
-    def get_total_bug_and_open_bug_num_by_time_period(self, j_query, end_day):
+    def get_total_bug_and_closed_open_bug_num_by_time_period(self, j_query, end_day):
         '''
-         Get the total and still opened pair before end day.
+         Get the total , closed and still opened pair before end day.
         :param j_query: eg:
         "project = {project} AND issuetype in ({issue_type}) and created >= {start_day} AND created <= {end_day}
 
         :param
         end_day: DATETIME format. DateTime(end_time)
         :return:
-        (10, 3)
+
+
         '''
         issue_ids = self.get_task_id_by_query_string(j_query)
-        number = 0
+        closed_number = 0
+        resoved_number = 0
         for item in issue_ids:
-            closed_date = self.get_issue_closed_date_by_id(str(item))
+            closed_date = self.get_issue_closed_status_by_date(str(item), end_day)
+            resolved_date = self.get_issue_resoved_status_by_date(str(item), end_day)
             if closed_date:
-                # if closed_date<= end_day:
-
                 if DateTime(closed_date)<= DateTime(end_day):
-                # if closed_date.asdatetime().strftime("%Y-%m-%d") <= end_day:
-                    number +=1
-        return len(issue_ids), len(issue_ids) - number
+                    closed_number +=1
+            if resolved_date:
+                if DateTime(resolved_date)<= DateTime(end_day):
+                    resoved_number +=1
+
+        return len(issue_ids), len(issue_ids) - closed_number, closed_number, resoved_number, len(issue_ids) - closed_number - resoved_number
 
     def html_get_total_bug_and_open_bug_trend_by_sprint(self, sprint_id, id_of_board=config.board_id, project=config.project_name):
         '''
@@ -211,13 +265,39 @@ class JiraHelper(object):
           ['2015-12-07', 0, 0], ['2015-12-08', 0, 0], ['2015-12-09', 0, 1], ['2015-12-10', 2, 3], ['2015-12-11', 3, 5], ['2015-12-12', 4, 6]
           ]
         '''
-        sprint_info = self.get_sprint_info(sprint_id, id_of_board)
+        # Version1 and Version2, bug trends should use this block.
+            # sprint_info = self.get_sprint_info(sprint_id, id_of_board)
+            #
+            # start_date = DateTime(sprint_info["startDate"])
+            # end_date = DateTime(sprint_info["endDate"])
+            # current_date = DateTime(start_date)
+            # nested_list_for_html = []
+            # title_list = ["date", "total bug number", "opened bug number"]
+            # nested_list_for_html.append(title_list)
+            #
+            # while current_date <= end_date:
+            #     j_query_string = '''project = {project} AND issuetype in ({issue_type}) and created >= {start_day} AND created <= {end_day}'''\
+            #         .format(project= project, issue_type= self.IssueType.Bug, start_day=start_date.asdatetime().strftime("%Y-%m-%d"), end_day=current_date.asdatetime().strftime("%Y-%m-%d"))
+            #     temp_list = []
+            #     temp_list.append(current_date.asdatetime().strftime("%Y-%m-%d"))
+            #
+            #     bug_number_info = self.get_total_bug_and_open_bug_num_by_time_period(j_query_string, current_date)
+            #     total_number = bug_number_info[0]
+            #     opened_number = bug_number_info[1]
+            #     temp_list.append(total_number)
+            #     temp_list.append(opened_number)
+            #     nested_list_for_html.append(temp_list)
+            #     current_date = current_date +1
+            #
+            # return nested_list_for_html
 
+        # Version 3, current use
+        sprint_info = self.get_sprint_info(sprint_id, id_of_board)
         start_date = DateTime(sprint_info["startDate"])
         end_date = DateTime(sprint_info["endDate"])
         current_date = DateTime(start_date)
         nested_list_for_html = []
-        title_list = ["date", "total bug number", "opened bug number"]
+        title_list = ["date", "closed bugs", "resolved bugs", "open bugs"]
         nested_list_for_html.append(title_list)
 
         while current_date <= end_date:
@@ -226,15 +306,18 @@ class JiraHelper(object):
             temp_list = []
             temp_list.append(current_date.asdatetime().strftime("%Y-%m-%d"))
 
-            bug_number_info = self.get_total_bug_and_open_bug_num_by_time_period(j_query_string, current_date)
-            total_number = bug_number_info[0]
-            opened_number = bug_number_info[1]
-            temp_list.append(total_number)
+            bug_number_info = self.get_total_bug_and_closed_open_bug_num_by_time_period(j_query_string, current_date)
+            closed_number = bug_number_info[2]
+            resolved_number = bug_number_info[3]
+            opened_number = bug_number_info[4]
+            temp_list.append(closed_number)
+            temp_list.append(resolved_number)
             temp_list.append(opened_number)
             nested_list_for_html.append(temp_list)
             current_date = current_date +1
 
         return nested_list_for_html
+
 
     def get_task_info_by_id(self, id):
         issue = self.jira.issue(id)
@@ -432,7 +515,8 @@ class JiraHelper(object):
 
         for dict in task_list:
             bug_info = []
-            bug_info.append(dict["Key"])
+
+            bug_info.append('''<a href="https://jira.englishtown.com/browse/{}">'''.format(dict["Key"]) + dict["Key"] + '''</a>''')
             bug_info.append(dict["Priority"])
             bug_info.append(dict["Summary"])
             bug_info.append(dict["Status"])
@@ -676,4 +760,7 @@ class JiraHelper(object):
 
 if __name__ =="__main__":
     jira = JiraHelper(config.jira_options, config.jira_account)
-    print jira.get_num_of_sprint_names_by_board_id(60)
+
+    raw_change_request_list = jira.get_change_request_info_by_sprint('1858',  'ATEAM')
+    sprint_change_request_nested_list = jira.html_get_bug_list_by_tasks(raw_change_request_list)
+    print sprint_change_request_nested_list

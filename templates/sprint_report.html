@@ -85,7 +85,7 @@
 
         tableOptions.forEach(function (option) {
             var chart = new google.visualization.Table(document.getElementById(option.containerId));
-            chart.draw(option.getDataTable(), {showRowNumber: true, width: '80%'});
+            chart.draw(option.getDataTable(), {showRowNumber: true, width: '80%', allowHtml:true});
         });
 
       }
@@ -134,29 +134,53 @@
         <!--chart.draw(data, options);-->
       <!--}-->
 
-      //bug trend of accumulative opened bugs & closed bugs -- Version 2
-      google.load('visualization', '1.0', {'packages':['bar']});
-      google.setOnLoadCallback(drawChart1);
+      <!--//bug trend of accumulative opened bugs & closed bugs &#45;&#45; Version 2-->
+      <!--google.load('visualization', '1.0', {'packages':['bar']});-->
+      <!--google.setOnLoadCallback(drawChart1);-->
 
-      function drawChart1() {
-        var data = google.visualization.arrayToDataTable({{total_bug_and_opened_bug_pair_nested_list|safe}});
+      <!--function drawChart1() {-->
+        <!--var data = google.visualization.arrayToDataTable({{total_bug_and_opened_bug_pair_nested_list|safe}});-->
 
-        var options = {
-          chart: {
-            title: 'Total Bugs VS Still Opened Bugs',
-            subtitle: 'Total bugs number and still opened bugs  numbers by the end of every day',
-          },
-          bars: 'vertical',
-          vAxis: {format: 'decimal'},
-          height: 400,
-          colors: ['#1b9e77', '#FF7F00']
-        };
+        <!--var options = {-->
+          <!--chart: {-->
+            <!--title: 'Total Bugs VS Still Opened Bugs',-->
+            <!--subtitle: 'Total bugs number and still opened bugs  numbers by the end of every day',-->
+          <!--},-->
+          <!--bars: 'vertical',-->
+          <!--vAxis: {format: 'decimal'},-->
+          <!--height: 400,-->
+          <!--colors: ['#1b9e77', '#FF7F00']-->
+        <!--};-->
 
-        var chart = new google.charts.Bar(document.getElementById('bug_trends'));
+        <!--var chart = new google.charts.Bar(document.getElementById('bug_trends'));-->
 
-        chart.draw(data, options);
+        <!--chart.draw(data, options);-->
 
-      }
+      <!--}-->
+
+
+
+    //bug trend of accumulative opened bugs & closed bugs -- Version 3
+    google.load('visualization', '1.0', {packages: ['corechart', 'bar']});
+    google.setOnLoadCallback(drawTrendlines);
+
+    function drawTrendlines() {
+
+     var data = google.visualization.arrayToDataTable({{total_bug_and_opened_bug_pair_nested_list|safe}});
+
+          var options = {
+            width: 1000,
+            legend: { position: 'top', maxLines: 3 },
+            bar: { groupWidth: '50%' },
+            isStacked: true,
+
+          };
+
+         var chart = new google.visualization.ColumnChart(document.getElementById("bug_trends"));
+          chart.draw(data, options);
+
+        }
+
     </script>
 
 </head>
@@ -187,9 +211,14 @@
         <!--<div>The detail priority related bug info are:<br />{{bug_priority_share_detail_info|safe}}</div>-->
 
     <div id="piechart_story_share" style="width: 500px; height: 300px;"></div>
-        <div>Below issue should pay attention to, for they are not related to any of stories in sprint: <br />{{story_share_detail_info|safe}}</div>
+        <div><b>Below issue should pay attention to, for they are not related to any of stories in sprint:</b> <br />{{story_share_detail_info|safe}}</div>
     <br />
-    <div id="bug_trends"></div>
+    <div>
+        <p><b>Sprint Bug Trends</b></p>
+        <br />
+        <div id="bug_trends" style="width: 500px; height: 300px;"></div>
+    </div>
+
 
 
 </div>
