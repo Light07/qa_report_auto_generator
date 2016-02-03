@@ -102,6 +102,7 @@ form input#qa_resource,
 form input#username,
 form input#password,
 form input#board_id,
+form input#quick_filter,
 form select#sprint_name
 {
   width: 400px;

@@ -84,11 +84,13 @@ class JiraHelper(object):
         return sp_name
 
     def get_active_sprint_id_by_board_id(self, id_of_board):
+        return_list = []
         sp = self.jira.sprints(id_of_board)
         for i in sp:
             if i.raw["state"] == "ACTIVE":
-               sprint_id = i.raw['id']
-        return sprint_id
+               return_list.append(i.raw['id'])
+
+        return return_list
 
     def get_sprint_id_by_sprint_name(self, id_of_board, sprint_name):
 
@@ -135,10 +137,9 @@ class JiraHelper(object):
     def get_return_value_from_api_request(self, restful_string, property):
         return self.jira.find(restful_string, property).raw["issues"]
 
-    def get_actual_story_points_by_sprint(self, sprint_id, project=config.project_name):
-        all_story = self.get_standard_tasks_info_by_sprint(sprint_id, project)
+    def get_actual_story_points_by_sprint(self, standard_tasks_info_by_sprint):
         story_point = 0
-        for i in all_story:
+        for i in standard_tasks_info_by_sprint:
             if i["Story_point"]:
                 story_point += int(i["Story_point"])
         return story_point
@@ -173,7 +174,10 @@ class JiraHelper(object):
                 return None
         return closed_date
 
-    def get_issue_resoved_status_by_date(self, id, date):
+    def get_issue_resolved_status_by_date(self, id, date):
+        '''
+            If issue closed date < = date, then resolved return None.
+        '''
         issue = self.jira.issue(id, expand='changelog')
         change_log = issue.changelog
         resolved_date = None
@@ -186,6 +190,11 @@ class JiraHelper(object):
         if resolved_date:
             if DateTime(resolved_date) > DateTime(date):
                 return None
+
+            closed_date = self.get_issue_closed_status_by_date(id, date)
+            if closed_date:
+                    return None
+
         return resolved_date
 
 
@@ -211,7 +220,7 @@ class JiraHelper(object):
         :return: return nested list [['2015-12-20', 5],['2015-12-30', 2]]
         '''
         issue_ids = self.get_task_id_by_query_string(j_query)
-        print issue_ids
+
         key_date_dict = {}
         date_key_dict = {}
         target_list = []
@@ -246,17 +255,17 @@ class JiraHelper(object):
         resoved_number = 0
         for item in issue_ids:
             closed_date = self.get_issue_closed_status_by_date(str(item), end_day)
-            resolved_date = self.get_issue_resoved_status_by_date(str(item), end_day)
+            resolved_date = self.get_issue_resolved_status_by_date(str(item), end_day)
             if closed_date:
-                if DateTime(closed_date)<= DateTime(end_day):
+                if DateTime(closed_date).asdatetime().strftime("%Y-%m-%d") <= DateTime(end_day).asdatetime().strftime("%Y-%m-%d"):
                     closed_number +=1
             if resolved_date:
-                if DateTime(resolved_date)<= DateTime(end_day):
+                if DateTime(resolved_date).asdatetime().strftime("%Y-%m-%d") <= DateTime(end_day).asdatetime().strftime("%Y-%m-%d"):
                     resoved_number +=1
 
         return len(issue_ids), len(issue_ids) - closed_number, closed_number, resoved_number, len(issue_ids) - closed_number - resoved_number
 
-    def html_get_total_bug_and_open_bug_trend_by_sprint(self, sprint_id, id_of_board=config.board_id, project=config.project_name):
+    def html_get_total_bug_and_open_bug_trend_by_sprint(self, sprint_id, id_of_board=config.board_id, project=config.project_name, component_filter=None):
         '''
         :param id_of_board:
         :param sprint_id:
@@ -306,6 +315,8 @@ class JiraHelper(object):
             temp_list = []
             temp_list.append(current_date.asdatetime().strftime("%Y-%m-%d"))
 
+            if component_filter:
+                j_query_string = j_query_string + ''' and component in ({component})'''.format(component=component_filter)
             bug_number_info = self.get_total_bug_and_closed_open_bug_num_by_time_period(j_query_string, current_date)
             closed_number = bug_number_info[2]
             resolved_number = bug_number_info[3]
@@ -329,10 +340,29 @@ class JiraHelper(object):
         issue_dict["Status"] = issue.fields.status.name
         issue_dict["Created"] = issue.fields.created
         issue_dict["Story_point"] = issue.fields.customfield_10002
+        issue_dict["Components"] = issue.fields.components
         return issue_dict
 
+    def get_filtered_task_info_by_component(self, task_lists, component_value):
+        return_list = []
+        for l in task_lists:
+            if l['Components']:
+                if str(component_value) in str(l['Components']):
+                    return_list.append(l)
+        return return_list
+
+    def get_filtered_task_id_by_component(self, task_id_lists, component_value):
+        return_list = []
+        for l in task_id_lists:
+            item = self.get_task_info_by_id(l)
+            if item.has_key("Components"):
+                if str(component_value) in str(item['Components']):
+                    return_list.append(l)
+        return return_list
+
+
     def get_task_info_by_query_string(self, j_query):
-        all_ids = self.jira.search_issues(j_query)
+        all_ids = self.jira.search_issues(j_query, maxResults=False)
         task_info = []
         for id in all_ids:
             task_info.append(self.get_task_info_by_id(id))
@@ -340,7 +370,7 @@ class JiraHelper(object):
 
     def get_task_id_by_query_string(self, j_query):
         issue_list = []
-        for item in self.jira.search_issues(j_query):
+        for item in self.jira.search_issues(j_query, maxResults=False):
             issue_list.append(item)
         return issue_list
 
@@ -396,35 +426,36 @@ class JiraHelper(object):
         return self.get_task_id_by_query_string(bug_query_string)
 
     def get_live_defect_info_by_sprint(self, sprint_id, project=config.project_name):
-        live_defect_query_string = '''project = "{project}" AND issuetype in ({issue_type}) and sprint = {sprint}'''.format(project=project, issue_type=self.IssueType.LiveDefect, sprint=sprint_id)
+        live_defect_query_string = '''project = "{project}" AND issuetype in ({issue_type}) and sprint in ({sprint})'''.format(project=project, issue_type=self.IssueType.LiveDefect, sprint=sprint_id)
         return self.get_task_info_by_query_string(live_defect_query_string)
 
     def get_live_defect_id_by_sprint(self, sprint_id, project=config.project_name):
-        live_defect_query_string = '''project = "{project}" AND issuetype in ({issue_type}) and sprint = {sprint}'''.format(project=project, issue_type=self.IssueType.LiveDefect, sprint=sprint_id)
+        live_defect_query_string = '''project = "{project}" AND issuetype in ({issue_type}) and sprint in ({sprint})'''.format(project=project, issue_type=self.IssueType.LiveDefect, sprint=sprint_id)
         return self.get_task_id_by_query_string(live_defect_query_string)
 
     def get_change_request_info_by_sprint(self, sprint_id, project=config.project_name):
-        change_request_query_string = '''project = "{project}" AND issuetype in ({issue_type}) and sprint = {sprint}'''.format(project=project, issue_type=self.IssueType.ChangeRequest, sprint=sprint_id)
+        change_request_query_string = '''project = "{project}" AND issuetype in ({issue_type}) and sprint in ({sprint})'''.format(project=project, issue_type=self.IssueType.ChangeRequest, sprint=sprint_id)
         return self.get_task_info_by_query_string(change_request_query_string)
 
     def get_change_request_id_by_sprint(self, sprint_id, project=config.project_name):
-        change_request_query_string = '''project = "{project}" AND issuetype in ({issue_type}) and sprint = {sprint}'''.format(project=project, issue_type=self.IssueType.ChangeRequest, sprint=sprint_id)
+        change_request_query_string = '''project = "{project}" AND issuetype in ({issue_type}) and sprint in ({sprint})'''.format(project=project, issue_type=self.IssueType.ChangeRequest, sprint=sprint_id)
         return self.get_task_id_by_query_string(change_request_query_string)
 
     def get_standard_tasks_info_by_sprint(self, sprint_id, project=config.project_name):
-        standard_type_query = '''project = "{project}" AND issuetype in ({issue_type}) and sprint = {sprint}'''.format(project=project, issue_type=self.IssueType.StandardType, sprint=sprint_id)
+        standard_type_query = '''project = "{project}" AND issuetype in ({issue_type}) and sprint in ({sprint})'''.format(project=project, issue_type=self.IssueType.StandardType, sprint=sprint_id)
         return self.get_task_info_by_query_string(standard_type_query)
 
     def get_standard_tasks_id_by_sprint(self, sprint_id, project=config.project_name):
-        standard_type_query = '''project = "{project}" AND issuetype in ({issue_type}) and sprint = {sprint}'''.format(project=project, issue_type=self.IssueType.StandardType, sprint=sprint_id)
+        standard_type_query = '''project = "{project}" AND issuetype in ({issue_type}) and sprint in ({sprint})'''.format(project=project, issue_type=self.IssueType.StandardType, sprint=sprint_id)
+
         return self.get_task_id_by_query_string(standard_type_query)
 
     def get_story_info_by_sprint(self, sprint_id, project=config.project_name):
-        story_type_query = '''project = "{project}" AND issuetype in ({issue_type}) and sprint = {sprint}'''.format(project=project, issue_type=self.IssueType.Story, sprint=sprint_id)
+        story_type_query = '''project = "{project}" AND issuetype in ({issue_type}) and sprint in ({sprint})'''.format(project=project, issue_type=self.IssueType.Story, sprint=sprint_id)
         return self.get_task_info_by_query_string(story_type_query)
 
     def get_story_id_by_sprint(self, sprint_id, project=config.project_name):
-        story_type_query = '''project = "{project}" AND issuetype in ({issue_type}) and sprint = {sprint}'''.format(project=project, issue_type=self.IssueType.Story, sprint=sprint_id)
+        story_type_query = '''project = "{project}" AND issuetype in ({issue_type}) and sprint in ({sprint})'''.format(project=project, issue_type=self.IssueType.Story, sprint=sprint_id)
         return self.get_task_id_by_query_string(story_type_query)
 
     def get_tasks_removed_from_current_sprint(self, sprint_id, project=config.project_name):
@@ -432,16 +463,15 @@ class JiraHelper(object):
         task_removed_query = '''project = "{project}" AND issuetype in ({issue_type}) and fixversion was in "{fixversion}" and fixversion !="{fixversion}"'''.format(project=project, issue_type=self.IssueType.StandardType, fixversion=fixversion)
         return self.get_task_info_by_query_string(task_removed_query)
 
-    def get_bugs_not_found_in_sprint_but_closed_in_sprint(self, sprint_id, id_of_board_id=config.board_id, project=config.project_name):
+    def get_bugs_not_found_in_sprint_but_closed_in_sprint(self, sprint_id, id_of_board_id=config.board_id, project=config.project_name, component_filter=None):
         start_day = self.get_sprint_start_end_day(sprint_id, id_of_board_id)["start_day"]
         end_day = self.get_sprint_start_end_day(sprint_id, id_of_board_id)["end_day"]
         bug_query_string = '''project = "{project}" AND issuetype in ({issue_type}) and created <"{start_day}" and  resolved>="{start_day}" and resolved <="{end_day}" and status = {status} '''.format(project=project, issue_type=self.IssueType.Bug, start_day=start_day, end_day=end_day, status=self.BugStatus.closed)
         return self.get_task_info_by_query_string(bug_query_string)
 
-    def get_task_id_that_has_linked_task(self, sprint_id, id_of_board_id=config.board_id, project=config.project_name):
-        all_ids = self.get_bug_id_by_sprint(sprint_id, id_of_board_id, project)
+    def get_task_id_that_has_linked_task(self, bug_id__list_by_sprint):
         task_id = []
-        for id in all_ids:
+        for id in bug_id__list_by_sprint:
             if self.get_id_and_linked_id_dict(id):
                 task_id.append(self.get_id_and_linked_id_dict(id)["id"])
         return task_id
@@ -541,9 +571,9 @@ class JiraHelper(object):
                 new_list.append(l)
         return new_list
 
-    def html_get_share_ratio_by_priority(self, sprint_id, id_of_board_id=config.board_id,  project=config.project_name):
+    def html_get_share_ratio_by_priority(self, issue_list, category="Priority"):
         '''
-        :param sprint_id:
+        :param :
         :return:
             eg: [
             ['priority', 'number'],
@@ -553,18 +583,16 @@ class JiraHelper(object):
             ['Minor', 2]
             ]
         '''
-        category="Priority"
         title="PriorityCategory"
         value="Numbers"
-        issue_list = self.get_bug_info_by_sprint(sprint_id, id_of_board_id, project)
         issue_dict = self.get_issue_num_group_by_Category(issue_list, category)
         issue_dict[title] = value
         return self.convert_dict_to_str_list(issue_dict)
 
-    def html_get_share_ratio_detail_by_priority(self, sprint_id, id_of_board_id=config.board_id,  project=config.project_name):
+    def html_get_share_ratio_detail_by_priority(self, issue_list):
         '''
 
-        :param sprint_id:
+        :param :
         :return: eg:
         [['Blocker', ['ATEAM-3913']],
          ['Major', ['ATEAM-3922', 'ATEAM-3941'] ],
@@ -572,9 +600,8 @@ class JiraHelper(object):
          ['Minor', ['ATEAM-3921', 'ATEAM-3920']]]
 
         '''
-        issue_list = self.get_bug_info_by_sprint(sprint_id, id_of_board_id, project)
-        issue_list = self.get_issue_key_group_by_priority(issue_list)
-        return str(issue_list).replace("u", "")
+        issues = self.get_issue_key_group_by_priority(issue_list)
+        return str(issues).replace("u", "")
 
     def get_issue_num_group_by_Category(self, bug_list, category):
         '''
@@ -625,7 +652,7 @@ class JiraHelper(object):
 
         return story_dict_with_linked_issue
 
-    def html_get_linked_issue_detail_group_by_story(self, sprint_id, id_has_linked_id, id_of_board_id=config.board_id, project=config.project_name):
+    def html_get_linked_issue_detail_group_by_story(self, id_has_linked_id, bug_id_list_by_sprint):
         dict_result = self.get_linked_issue_detail_group_by_story(id_has_linked_id)
         str_format_result = {}
         story_related_issue_id = []
@@ -643,8 +670,7 @@ class JiraHelper(object):
             for v in str_format_result[k]:
                 story_related_issue_id.append(v)
 
-        all_bug_id = self.get_bug_id_by_sprint(sprint_id, id_of_board_id, project)
-        for id in all_bug_id:
+        for id in bug_id_list_by_sprint:
             if str(id) not in story_related_issue_id:
                 no_story_related_issue.append(str(id))
         return story_related_issue_detail, no_story_related_issue
@@ -682,15 +708,15 @@ class JiraHelper(object):
 
         return str(nested_lists).replace("u", "")
 
-    def html_get_live_defect_percentage_of_all_defects(self, sprint_id, id_of_board_id=config.board_id, project=config.project_name):
-        live_defect_num = len(self.get_live_defect_id_by_sprint(sprint_id, project))
-        all_defect_num = len(self.get_bug_id_by_sprint(sprint_id, id_of_board_id, project)) + live_defect_num
+    def html_get_live_defect_percentage_of_all_defects(self, live_defect_id_list_by_sprint, bug_id__list_by_sprint):
+        live_defect_num = len(live_defect_id_list_by_sprint)
+        all_defect_num = len(bug_id__list_by_sprint) + live_defect_num
 
         return self.calculate_task_percentage(live_defect_num, all_defect_num)
 
-    def html_get_change_request_percentage_of_all_defects(self, sprint_id, project=config.project_name):
-        all_tasks = len(self.get_standard_tasks_id_by_sprint(sprint_id, project))
-        change_request = len(self.get_change_request_id_by_sprint(sprint_id, project))
+    def html_get_change_request_percentage_of_all_defects(self, standard_tasks_id_list_by_sprint, change_request_id_list_by_sprint):
+        all_tasks = len(standard_tasks_id_list_by_sprint)
+        change_request = len(change_request_id_list_by_sprint)
         return self.calculate_task_percentage(change_request, all_tasks)
 
     def calculate_task_percentage(self, target_task_num, total_task_num):
@@ -700,9 +726,9 @@ class JiraHelper(object):
             percentage = float(target_task_num)/float(total_task_num)
             return format(percentage, '.2%')
 
-    def html_get_automation_found_bug_percentange(self, sprint_id, id_of_board_id=config.board_id, project=config.project_name):
-        all_defect_num = len(self.get_bug_id_by_sprint(sprint_id, id_of_board_id, project))
-        auto_bug = len(self.get_automation_found_bug_info_by_sprint(sprint_id, id_of_board_id, project))
+    def html_get_automation_found_bug_percentange(self, bug_id_list_by_sprint, auto_found_bug_info_list):
+        all_defect_num = len(bug_id_list_by_sprint)
+        auto_bug = len(auto_found_bug_info_list)
         return self.calculate_task_percentage(auto_bug, all_defect_num)
 
     def get_issue_key_group_by_priority(self, bug_list):
@@ -757,10 +783,6 @@ class JiraHelper(object):
                 status = "fail"
         return status
 
-
-if __name__ =="__main__":
-    jira = JiraHelper(config.jira_options, config.jira_account)
-
-    raw_change_request_list = jira.get_change_request_info_by_sprint('1858',  'ATEAM')
-    sprint_change_request_nested_list = jira.html_get_bug_list_by_tasks(raw_change_request_list)
-    print sprint_change_request_nested_list
+# if __name__ == "__main__":
+    # jira = JiraHelper(config.jira_options, config.jira_account)
+    # print jira.get_issue_resolved_status_by_date('ME-2628', '2016-02-02')

@@ -9,6 +9,12 @@ project_name = None
 
 board_id = None
 
+
+# For engage team, customized usage
+p_name = "ME"
+b_id = "416"
+quick_filter_choice = [('iOS', 'iOS'), ('Android', 'Android'), ('-1','Plese select a component')]
+
 # Used to control how many sprint will shown on index page.
 num_of_sprint_shown = 10
 

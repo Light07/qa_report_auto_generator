@@ -188,7 +188,12 @@
 <div id="loading"></div>
 <div id="content">
 <div class="page-header" style=" text-align:center; ">
-  <h1>ASD Sprint Report - <body>{{sprint_name_string|safe}}</body></h1>
+    {% if customized_component %}
+    <h1>{{project_required|safe}} {{customized_component|safe}} Sprint Report - <body>{{sprint_name_string|safe}}</body></h1>
+    {% else %}
+    <h1>{{project_required|safe}} Sprint Report - <body>{{sprint_name_string|safe}}</body></h1>
+    {% endif %}
+
         <nav>
         <ul class="menu">
             <li  style=" text-align:right;"><a href="{{ url_for('success') }}">DownLoad Sprint Report</a></li>
@@ -211,7 +216,7 @@
         <!--<div>The detail priority related bug info are:<br />{{bug_priority_share_detail_info|safe}}</div>-->
 
     <div id="piechart_story_share" style="width: 500px; height: 300px;"></div>
-        <div><b>Below issue should pay attention to, for they are not related to any of stories in sprint:</b> <br />{{story_share_detail_info|safe}}</div>
+        <div><b>Bugs NOT related to any of stories in sprint:</b> <br />{{story_share_detail_info|safe}}</div>
     <br />
     <div>
         <p><b>Sprint Bug Trends</b></p>

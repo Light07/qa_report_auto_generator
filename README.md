@@ -19,3 +19,17 @@ Tags:
 1.Use Flask Completely.
 2.All the values are relay on user's input.
 3.User can run flask_main.py from terminal to start test sever to see the results.
+
+3.0 & 3.1
+1.Add wsgi_handler.wsgi to make application support Apache(3.0).
+2.Change the bug trends with stacked chart, and add hyper-link to each of the listed issues.
+
+4.0
+1.Fix bug -- return value of "story_share_detail" in flask_main.py return all of the issue instead of the issues without linked storoies.
+2.Add a customized page to support filter with components(Now hard coded into config.py, user can search \
+<#For engage team, customized usage> for detail, and support for replaced with user defined components, as long as the quick filter is \
+defined like:
+Name            JQL
+Android	        "component in ("Efekta 15 Smartphone Android", Android)"
+3.Fix issue of the return value of resolved date -- get_issue_resolved_status_by_date.
+4.Add customized title for customized components.
