@@ -3,7 +3,8 @@
 # Why jira API is slow, check out:
 # https://jira.atlassian.com/browse/JRA-36224
 # https://jira.atlassian.com/browse/JRA-30170
-from collections import defaultdict
+
+import json
 from DateTime import DateTime
 
 from jira.client import JIRA
@@ -663,7 +664,7 @@ class JiraHelper(object):
         for dict in task_list:
             bug_info = []
 
-            bug_info.append('''<a href="https://jira.englishtown.com/browse/{}">'''.format(dict["Key"]) + dict["Key"] + '''</a>''')
+            bug_info.append('''<a href="{0}/browse/{1}">'''.format(config.jira_options['server'], dict["Key"]) + dict["Key"] + '''</a>''')
             bug_info.append(dict["Priority"])
             bug_info.append(dict["Summary"])
             bug_info.append(dict["Status"])
@@ -671,7 +672,7 @@ class JiraHelper(object):
 
         str_nested_list = self.remove_duplicated_value(bug_list_for_html)
 
-        return str(str_nested_list).replace("u", '')
+        return json.dumps(str_nested_list)
 
     def html_get_linked_issue_list_by_tasks(self, task_list_has_linked_issue):
         '''
@@ -906,4 +907,4 @@ if __name__ == "__main__":
     # print jira.get_task_status_change_date("ATEAM-4096")
     # print jira.get_sprint_info(1858, 60)
     # print jira.get_issue_resolved_status_by_date('ME-2628', '2016-02-02')
-    print jira.html_get_total_bug_and_open_bug_trend_by_sprint(1858, 60, "ATEAM")
+    # print jira.html_get_total_bug_and_open_bug_trend_by_sprint(1858, 60, "ATEAM")
