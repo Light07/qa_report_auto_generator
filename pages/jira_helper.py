@@ -135,9 +135,6 @@ class JiraHelper(object):
         '''
         return self.jira.sprint_info(id_of_board, sprint_id)
 
-    def get_return_value_from_api_request(self, restful_string, property):
-        return self.jira.find(restful_string, property).raw["issues"]
-
     def get_actual_story_points_by_sprint(self, standard_tasks_info_by_sprint):
         story_point = 0
         for i in standard_tasks_info_by_sprint:
@@ -154,50 +151,11 @@ class JiraHelper(object):
                 if item.field == 'status':
                     if item.toString == 'Closed':
                         closed_date = history.created
-                        # closed_date = self.convert_time_zone(history.created)
+
         if issue.fields.status == 'Closed':
             return closed_date
         else:
             return None
-
-    def get_issue_closed_status_by_date(self, id, date):
-        issue = self.jira.issue(id, expand='changelog')
-        change_log = issue.changelog
-        closed_date = None
-        for history in change_log.histories:
-            for item in history.items:
-                if item.field == 'status':
-                    if item.toString == 'Closed':
-                        closed_date = history.created
-
-        if closed_date:
-            if DateTime(closed_date) > DateTime(date):
-                return None
-        return closed_date
-
-    def get_issue_resolved_status_by_date(self, id, date):
-        '''
-            If issue closed date < = date, then resolved return None.
-        '''
-        issue = self.jira.issue(id, expand='changelog')
-        change_log = issue.changelog
-        resolved_date = None
-        for history in change_log.histories:
-            for item in history.items:
-                if item.field == 'status':
-                    if item.toString == 'Resolved':
-                        resolved_date = history.created
-
-        if resolved_date:
-            if DateTime(resolved_date) > DateTime(date):
-                return None
-
-            closed_date = self.get_issue_closed_status_by_date(id, date)
-            if closed_date:
-                    return None
-
-        return resolved_date
-
 
     def get_issue_resoved_date_by_id(self, id):
         issue = self.jira.issue(id, expand='changelog')
@@ -266,7 +224,6 @@ class JiraHelper(object):
         else:
             final_dict[return_list[0][0]] = return_list[0][1]
         return final_dict #sorted(final_dict.iteritems(), key=lambda d:d[0]) #
-
 
     def get_closed_task_num_group_by_date(self, j_query):
         '''
@@ -387,7 +344,6 @@ class JiraHelper(object):
                     return_list.append(l)
         return return_list
 
-
     def get_task_info_by_query_string(self, j_query):
         all_ids = self.jira.search_issues(j_query, maxResults=False)
         task_info = []
@@ -437,7 +393,7 @@ class JiraHelper(object):
 
     def get_bug_info_by_sprint(self, sprint_id, id_of_board_id=config.board_id,  project=config.project_name):
         '''
-        sprint completed will replaced by due date if sprint bis currently active.
+        sprint completed will replaced by due date if sprint is currently active.
         :param sprint_id:
         :return:
         '''
@@ -485,9 +441,9 @@ class JiraHelper(object):
         story_type_query = '''project = "{project}" AND issuetype in ({issue_type}) and sprint in ({sprint})'''.format(project=project, issue_type=self.IssueType.Story, sprint=sprint_id)
         return self.get_task_id_by_query_string(story_type_query)
 
-    def get_tasks_removed_from_current_sprint(self, sprint_id, project=config.project_name):
+    def get_tasks_removed_from_current_sprint(self, sprint_id, id=config.board_id, project=config.project_name):
         fixversion = self.get_fix_version_by_sprint_id(sprint_id)
-        task_removed_query = '''project = "{project}" AND issuetype in ({issue_type}) and fixversion was in "{fixversion}" and fixversion !="{fixversion}"'''.format(project=project, issue_type=self.IssueType.StandardType, fixversion=fixversion)
+        task_removed_query = '''project = "{project}" AND issuetype in ({issue_type}) and fixversion was in ("{fixversion}") and fixversion !="{fixversion}"'''.format(project=project, issue_type=self.IssueType.StandardType, fixversion=fixversion)
         return self.get_task_info_by_query_string(task_removed_query)
 
     def get_bugs_not_found_in_sprint_but_closed_in_sprint(self, sprint_id, id_of_board_id=config.board_id, project=config.project_name, component_filter=None):
@@ -628,7 +584,7 @@ class JiraHelper(object):
 
         '''
         issues = self.get_issue_key_group_by_priority(issue_list)
-        return str(issues).replace("u", "")
+        return json.dumps(issues)
 
     def get_issue_num_group_by_Category(self, bug_list, category):
         '''
@@ -691,7 +647,7 @@ class JiraHelper(object):
             for i in dict_result[k]:
                 str_list.append(str(i))
             str_format_result[k] = str_list
-        story_related_issue_detail = str(str_format_result).replace("u", "")
+        story_related_issue_detail = json.dumps(str_format_result)
 
         for k in str_format_result.keys():
             for v in str_format_result[k]:
@@ -733,7 +689,7 @@ class JiraHelper(object):
             story_related_issue.append(len(story_dict_with_linked_issue[item]))
             nested_lists.append(story_related_issue)
 
-        return str(nested_lists).replace("u", "")
+        return json.dumps(nested_lists)
 
     def html_get_live_defect_percentage_of_all_defects(self, live_defect_id_list_by_sprint, bug_id__list_by_sprint):
         live_defect_num = len(live_defect_id_list_by_sprint)
@@ -794,11 +750,7 @@ class JiraHelper(object):
             temp = [k, v]
             str_list.append(temp)
 
-        return str(str_list).replace("u", "")
-
-    def convert_time_zone(self, date_time , target_time_format=TimeZone.China):
-        us_standard_time = DateTime(date_time)
-        return DateTime(us_standard_time).toZone(target_time_format)
+        return json.dumps(str_list)
 
     def html_get_sprint_status(self, sprint_id, id_of_board=config.board_id):
         sprint_info = self.get_sprint_info(sprint_id, id_of_board)
