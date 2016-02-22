@@ -1,4 +1,5 @@
 __author__ = 'kevin.cai'
+import os
 
 jira_options = {'server':"https://jira.englishtown.com"}
 
@@ -26,4 +27,4 @@ qa_resource = None
 delay_day = 4
 
 # Used for flask as secret key
-secrt_key = "EF Sprint Report"
+secrt_key = os.urandom(32)

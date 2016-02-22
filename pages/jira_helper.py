@@ -293,97 +293,6 @@ class JiraHelper(object):
             target_list.append(temp_list)
         return  sorted(target_list)
 
-    def get_total_bug_and_closed_open_bug_num_by_time_period(self, j_query, end_day):
-        '''
-         Get the total , closed and still opened pair before end day.
-        :param j_query: eg:
-        "project = {project} AND issuetype in ({issue_type}) and created >= {start_day} AND created <= {end_day}
-
-        :param
-        end_day: DATETIME format. DateTime(end_time)
-        :return:
-
-
-        '''
-        issue_ids = self.get_task_id_by_query_string(j_query)
-        closed_number = 0
-        resoved_number = 0
-        for item in issue_ids:
-            closed_date = self.get_issue_closed_status_by_date(str(item), end_day)
-            resolved_date = self.get_issue_resolved_status_by_date(str(item), end_day)
-            if closed_date:
-                if DateTime(closed_date).asdatetime().strftime("%Y-%m-%d") <= DateTime(end_day).asdatetime().strftime("%Y-%m-%d"):
-                    closed_number +=1
-            if resolved_date:
-                if DateTime(resolved_date).asdatetime().strftime("%Y-%m-%d") <= DateTime(end_day).asdatetime().strftime("%Y-%m-%d"):
-                    resoved_number +=1
-
-        return len(issue_ids), len(issue_ids) - closed_number, closed_number, resoved_number, len(issue_ids) - closed_number - resoved_number
-
-    # def html_get_total_bug_and_open_bug_trend_by_sprint(self, sprint_id, id_of_board=config.board_id, project=config.project_name, component_filter=None):
-    #     '''
-    #     :param id_of_board:
-    #     :param sprint_id:
-    #     :return: [
-    #       ['Date',  'total bug number', 'Opened bug number'],
-    #       ['2015-12-07', 0, 0], ['2015-12-08', 0, 0], ['2015-12-09', 0, 1], ['2015-12-10', 2, 3], ['2015-12-11', 3, 5], ['2015-12-12', 4, 6]
-    #       ]
-    #     '''
-    #     # Version1 and Version2, bug trends should use this block.
-    #         # sprint_info = self.get_sprint_info(sprint_id, id_of_board)
-    #         #
-    #         # start_date = DateTime(sprint_info["startDate"])
-    #         # end_date = DateTime(sprint_info["endDate"])
-    #         # current_date = DateTime(start_date)
-    #         # nested_list_for_html = []
-    #         # title_list = ["date", "total bug number", "opened bug number"]
-    #         # nested_list_for_html.append(title_list)
-    #         #
-    #         # while current_date <= end_date:
-    #         #     j_query_string = '''project = {project} AND issuetype in ({issue_type}) and created >= {start_day} AND created <= {end_day}'''\
-    #         #         .format(project= project, issue_type= self.IssueType.Bug, start_day=start_date.asdatetime().strftime("%Y-%m-%d"), end_day=current_date.asdatetime().strftime("%Y-%m-%d"))
-    #         #     temp_list = []
-    #         #     temp_list.append(current_date.asdatetime().strftime("%Y-%m-%d"))
-    #         #
-    #         #     bug_number_info = self.get_total_bug_and_open_bug_num_by_time_period(j_query_string, current_date)
-    #         #     total_number = bug_number_info[0]
-    #         #     opened_number = bug_number_info[1]
-    #         #     temp_list.append(total_number)
-    #         #     temp_list.append(opened_number)
-    #         #     nested_list_for_html.append(temp_list)
-    #         #     current_date = current_date +1
-    #         #
-    #         # return nested_list_for_html
-    #
-    #     # Version 3, current use
-    #     sprint_info = self.get_sprint_info(sprint_id, id_of_board)
-    #     start_date = DateTime(sprint_info["startDate"])
-    #     end_date = DateTime(sprint_info["endDate"])
-    #     current_date = DateTime(start_date)
-    #     nested_list_for_html = []
-    #     title_list = ["date", "closed bugs", "resolved bugs", "open bugs"]
-    #     nested_list_for_html.append(title_list)
-    #
-    #     while current_date <= end_date:
-    #         j_query_string = '''project = {project} AND issuetype in ({issue_type}) and created >= {start_day} AND created <= {end_day}'''\
-    #             .format(project= project, issue_type= self.IssueType.Bug, start_day=start_date.asdatetime().strftime("%Y-%m-%d"), end_day=current_date.asdatetime().strftime("%Y-%m-%d"))
-    #         temp_list = []
-    #         temp_list.append(current_date.asdatetime().strftime("%Y-%m-%d"))
-    #
-    #         if component_filter:
-    #             j_query_string = j_query_string + ''' and component in ({component})'''.format(component=component_filter)
-    #         bug_number_info = self.get_total_bug_and_closed_open_bug_num_by_time_period(j_query_string, current_date)
-    #         closed_number = bug_number_info[2]
-    #         resolved_number = bug_number_info[3]
-    #         opened_number = bug_number_info[4]
-    #         temp_list.append(closed_number)
-    #         temp_list.append(resolved_number)
-    #         temp_list.append(opened_number)
-    #         nested_list_for_html.append(temp_list)
-    #         current_date = current_date +1
-    #
-    #     return nested_list_for_html
-
     def html_get_total_bug_and_open_bug_trend_by_sprint(self, sprint_id, id_of_board=config.board_id, project=config.project_name, component_filter=None):
         '''
         :param id_of_board:
@@ -901,10 +810,6 @@ class JiraHelper(object):
                 status = "fail"
         return status
 
-if __name__ == "__main__":
-    jira = JiraHelper(config.jira_options, config.jira_account)
-    # print jira.get_task_info_by_id("ATEAM-4111")
-    # print jira.get_task_status_change_date("ATEAM-4096")
-    # print jira.get_sprint_info(1858, 60)
-    # print jira.get_issue_resolved_status_by_date('ME-2628', '2016-02-02')
-    # print jira.html_get_total_bug_and_open_bug_trend_by_sprint(1858, 60, "ATEAM")
+# if __name__ == "__main__":
+    # jira = JiraHelper(config.jira_options, config.jira_account)
+    # print jira.get_task_info_by_id('ATEAM-4159')
