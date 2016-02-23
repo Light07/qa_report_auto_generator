@@ -255,17 +255,15 @@ class JiraHelper(object):
         :param id_of_board:
         :param sprint_id:
         :return: [
-          ["date", "closed bugs", "resolved bugs", "open bugs"],
-          ['2015-12-07', 0, 0, 0], ['2015-12-08', 0, 0, 0], ['2015-12-09', 0, 1, 1]
+          ['2015-12-28', '2015-12-29', '2015-12-30', '2015-12-31'], #date in sprint.
+          [0, 1, 1, 1],#open bugs for each day.
+          [0, 0, 0, 0], #resolved bugs for each day.
+          [0, 0, 0, 0]  #closed bugs for each day
           ]
         '''
         sprint_info = self.get_sprint_info(sprint_id, id_of_board)
         start_date = DateTime(str(sprint_info["startDate"]) + ' ' +  "US/Eastern")
         end_date = DateTime(str(sprint_info["endDate"]) + ' ' +  "US/Eastern")
-
-        nested_list_for_html = []
-        title_list = ["date", "closed bugs", "resolved bugs", "open bugs"]
-        nested_list_for_html.append(title_list)
 
         j_query_string = '''project = {project} AND issuetype in ({issue_type}) and created >= {start_day} AND created <= {end_day}'''\
                 .format(project= project, issue_type= self.IssueType.Bug, start_day=start_date.asdatetime().strftime("%Y-%m-%d"), end_day=end_date.asdatetime().strftime("%Y-%m-%d"))
@@ -304,15 +302,24 @@ class JiraHelper(object):
             for k, v in d.iteritems():
                 status_dict.setdefault(k, []).append(v)
 
-        for item in  sorted(status_dict.iteritems(), key=lambda d:d[0]):
-            single_list = []
-            single_list.append(item[0])
-            single_list.append(item[1].count("Closed"))
-            single_list.append(item[1].count("Resolved"))
-            single_list.append(item[1].count("Created") + item[1].count("Open"))
-            nested_list_for_html.append(single_list)
+        return_list = []
+        date_list = []
+        open_bug_list = []
+        resolved_bug_list = []
+        closed_bug_list = []
 
-        return nested_list_for_html
+        for item in  sorted(status_dict.iteritems(), key=lambda d:d[0]):
+            date_list.append(item[0])
+            closed_bug_list.append(item[1].count("Closed"))
+            resolved_bug_list.append(item[1].count("Resolved"))
+            open_bug_list.append(item[1].count("Created") + item[1].count("Open"))
+
+        return_list.append(date_list)
+        return_list.append(open_bug_list)
+        return_list.append(resolved_bug_list)
+        return_list.append(closed_bug_list)
+
+        return return_list
 
     def get_task_info_by_id(self, id):
         issue = self.jira.issue(id)
@@ -537,7 +544,7 @@ class JiraHelper(object):
 
         str_nested_list = self.remove_duplicated_value(bug_list_for_html)
 
-        return json.dumps(str_nested_list)
+        return str_nested_list
 
     def html_get_linked_issue_list_by_tasks(self, task_list_has_linked_issue):
         '''
@@ -559,18 +566,21 @@ class JiraHelper(object):
         :param :
         :return:
             eg: [
-            ['priority', 'number'],
-            ['Blocker', 1],
-            ['Major', 5],
-            ['Critical', 1],
-            ['Minor', 2]
+            { name: 'Major',y: 8},
+            {name: 'Critical',y: 2},
+            {name: 'Low',y: 1,
+            {name: 'Minor',y: 2}
             ]
         '''
-        title="PriorityCategory"
-        value="Numbers"
-        issue_dict = self.get_issue_num_group_by_Category(issue_list, category)
-        issue_dict[title] = value
-        return self.convert_dict_to_str_list(issue_dict)
+        return_list = []
+        iter_value = self.get_issue_num_group_by_Category(issue_list, category)
+        for k in iter_value.keys():
+            temp_dict = {}
+            temp_dict["name"] = json.dumps(k)
+            temp_dict["y"] = iter_value[k]
+            return_list.append(temp_dict)
+
+        return return_list
 
     def html_get_share_ratio_detail_by_priority(self, issue_list):
         '''
@@ -592,6 +602,7 @@ class JiraHelper(object):
         :param bug_list:
         :param category:
         :return:
+            {u'Major': 8, u'Critical': 2, u'Low': 1, u'Minor': 2}
         '''
         priority_num_dict = {}
         bug_priority_list = []
@@ -662,10 +673,7 @@ class JiraHelper(object):
         '''
 
         :param task_id_list_has_linked_task:
-        [   <JIRA Issue: key=u'ATEAM-3941', id=u'186701'>,
-            <JIRA Issue: key=u'ATEAM-3919', id=u'185391'>,
-            <JIRA Issue: key=u'ATEAM-3913', id=u'185188'>
-        ]
+        ['ATEAM-4111', 'ATEAM-4092', 'ATEAM-4079', 'ATEAM-4067', 'ATEAM-4053', 'ATEAM-4049', 'ATEAM-4038']
         :return:
         [   ['Story', 'BugNum'], #this list must be the head list.
             [u'ATEAM-3880', 4],
@@ -673,20 +681,15 @@ class JiraHelper(object):
             [u'ATEAM-3884', 1]
         ]
         '''
-        title="Story"
-        value="BugNum"
-        nested_lists = []
-        title_list =[]
 
-        title_list.append(title)
-        title_list.append(value)
-        nested_lists.append(title_list)
+        nested_lists = []
 
         story_dict_with_linked_issue = self.get_linked_issue_detail_group_by_story(task_id_list_has_linked_task)
-        for item in story_dict_with_linked_issue:
-            story_related_issue = []
-            story_related_issue.append(item)
-            story_related_issue.append(len(story_dict_with_linked_issue[item]))
+
+        for k in story_dict_with_linked_issue.keys():
+            story_related_issue = {}
+            story_related_issue["name"] = json.dumps(k)
+            story_related_issue["y"] = len(story_dict_with_linked_issue[k])
             nested_lists.append(story_related_issue)
 
         return json.dumps(nested_lists)
@@ -762,6 +765,7 @@ class JiraHelper(object):
                 status = "fail"
         return status
 
-# if __name__ == "__main__":
-    # jira = JiraHelper(config.jira_options, config.jira_account)
-    # print jira.get_task_info_by_id('ATEAM-4159')
+if __name__ == "__main__":
+    jira = JiraHelper(config.jira_options, config.jira_account)
+    bug_trends = jira.html_get_total_bug_and_open_bug_trend_by_sprint(1858, 60, "ATEAM")
+    print bug_trends

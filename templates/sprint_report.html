@@ -9,178 +9,210 @@
             color: red;
         }
 
+    <!--body {-->
+        <!--font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;-->
+        <!--font-size: 14px;-->
+        <!--line-height: 1.42857143;-->
+        <!--color: #333;-->
+        <!--background-color: #fff;-->
+    <!--}-->
+        table th {
+            background-color: #999;
+        }
+        table th:nth-child(2),
+        table td:nth-child(2) {
+            white-space: nowrap;
+            word-break: keep-all;
+        }
+        table {
+    background-color: transparent;
+        border-spacing: 0;
+    border-collapse: collapse;
+    }
+    caption {
+    padding-top: 8px;
+    padding-bottom: 8px;
+    color: #777;
+    text-align: left;
+    }
+    th {
+    text-align: left;
+    }
+    .table {
+    width: 100%;
+    max-width: 100%;
+    margin-bottom: 20px;
+    }
+    .table > thead > tr > th,
+    .table > tbody > tr > th,
+    .table > tfoot > tr > th,
+    .table > thead > tr > td,
+    .table > tbody > tr > td,
+    .table > tfoot > tr > td {
+    padding: 4px;
+    line-height: 1.42857143;
+    vertical-align: top;
+    border-top: 1px solid #ddd;
+    }
+    .table > thead > tr > th {
+    vertical-align: bottom;
+    border-bottom: 2px solid #ddd;
+    }
+    .table > caption + thead > tr:first-child > th,
+    .table > colgroup + thead > tr:first-child > th,
+    .table > thead:first-child > tr:first-child > th,
+    .table > caption + thead > tr:first-child > td,
+    .table > colgroup + thead > tr:first-child > td,
+    .table > thead:first-child > tr:first-child > td {
+    border-top: 0;
+    }
+    .table > tbody + tbody {
+    border-top: 2px solid #ddd;
+    }
+    .table .table {
+    background-color: #fff;
+    }
+
     </style>
-    <script type="text/javascript" src="https://www.google.com/jsapi"></script>
-    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    <script type="text/javascript" src="//code.jquery.com/jquery-1.9.1.js"></script>
+    <script src="https://code.highcharts.com/highcharts.js"></script>
+    <script src="https://code.highcharts.com/modules/exporting.js"></script>
     <script type="text/javascript">
 
-   //Table lists group definition.
-      google.load("visualization", "1.1", {packages:["table"]});
-      google.setOnLoadCallback(drawTable);
+    //PieChart Bug priority share definition.
+    $(function () {
+        $('#piechart_priority_share').highcharts({
+            chart: {
+                plotBackgroundColor: null,
+                plotBorderWidth: null,
+                plotShadow: false,
+                type: 'pie'
+            },
+            title: {
+                text: 'Bug share by Priority'
+            },
 
-      function drawTable() {
-
-        var tableOptions = [
-         {
-            getDataTable: function() {
-                var data = new google.visualization.DataTable();
-                data.addColumn('string', 'Key');
-                data.addColumn('string', 'Priority');
-                data.addColumn('string', 'Summary');
-                data.addColumn('string', 'Status');
-                data.addRows({{sprint_bug_nested_lists|safe}});
-                return data;
+            plotOptions: {
+                pie: {
+                    allowPointSelect: true,
+                    cursor: 'pointer',
+                    dataLabels: {
+                        enabled: true,
+                        format: '<b>{point.name}</b>: {point.percentage:.1f} %',
+                        style: {
+                            color: (Highcharts.theme && Highcharts.theme.contrastTextColor) || 'black'
+                        }
+                    }
+                }
             },
-            containerId: 'bug_list_div'
-         },
-         {
-            getDataTable: function() {
-                var data = new google.visualization.DataTable();
-                data.addColumn('string', 'Key');
-                data.addColumn('string', 'Priority');
-                data.addColumn('string', 'Summary');
-                data.addColumn('string', 'Status');
-                data.addRows({{previous_bugs_closed_in_sprint|safe}});
-                return data;
-            },
-            containerId: 'Previous_found_bugs_closed_in_sprint_div'
-         },
-         {
-            getDataTable: function() {
-                var data = new google.visualization.DataTable();
-                data.addColumn('string', 'Key');
-                data.addColumn('string', 'Priority');
-                data.addColumn('string', 'Summary');
-                data.addColumn('string', 'Status');
-                data.addRows({{sprint_automation_found_bug_nested_lists|safe}});
-                return data;
-            },
-            containerId: 'automation_bug_div'
-         },
-         {
-            getDataTable: function() {
-                var data = new google.visualization.DataTable();
-                data.addColumn('string', 'Key');
-                data.addColumn('string', 'Priority');
-                data.addColumn('string', 'Summary');
-                data.addColumn('string', 'Status');
-                data.addRows({{sprint_live_defect_nested_lists|safe}});
-                return data;
-            },
-            containerId: 'live_defect_div'
-         },
-         {
-            getDataTable: function() {
-                var data = new google.visualization.DataTable();
-                data.addColumn('string', 'Key');
-                data.addColumn('string', 'Priority');
-                data.addColumn('string', 'Summary');
-                data.addColumn('string', 'Status');
-                data.addRows({{sprint_change_request_nested_lists|safe}});
-                return data;
-            },
-            containerId: 'change_request_div'
-         }
-        ];
-
-        tableOptions.forEach(function (option) {
-            var chart = new google.visualization.Table(document.getElementById(option.containerId));
-            chart.draw(option.getDataTable(), {showRowNumber: true, width: '80%', allowHtml:true});
+            series: [{
+                    name: 'Bug found',
+                colorByPoint: true,
+                data: {{bug_priority_nested_lists|safe}}
+            }]
         });
+    });
+    // PieChart story share definition.
+     $(function () {
+            $('#piechart_story_share').highcharts({
+                chart: {
+                    plotBackgroundColor: null,
+                    plotBorderWidth: null,
+                    plotShadow: false,
+                    type: 'pie'
+                },
+                title: {
+                    text: 'Bug share by Priority'
+                },
 
-      }
-
-      //PieChart group Definition.
-      google.load("visualization", "1", {packages:["corechart"]});
-      google.setOnLoadCallback(drawChart);
-      function drawChart() {
-        var chartOptions = [
-         {
-            chartOptions: {
-              title: 'Bug priority share'
-            },
-            data:google.visualization.arrayToDataTable({{bug_priority_nested_lists|safe}}),
-            containerId: 'piechart_priority_share'
-         },
-          {
-            chartOptions: {
-              title: 'Story share'
-            },
-            data:google.visualization.arrayToDataTable({{story_share_nested_lists|safe}}),
-            containerId: 'piechart_story_share'
-         }
-        ];
-
-        chartOptions.forEach(function (option) {
-            var chart = new google.visualization.PieChart(document.getElementById(option.containerId));
-            chart.draw(option.data, option.chartOptions);
+                plotOptions: {
+                    pie: {
+                        allowPointSelect: true,
+                        cursor: 'pointer',
+                        dataLabels: {
+                            enabled: true,
+                            format: '<b>{point.name}</b>: {point.percentage:.1f} %',
+                            style: {
+                                color: (Highcharts.theme && Highcharts.theme.contrastTextColor) || 'black'
+                            }
+                        }
+                    }
+                },
+                series: [{
+                        name: 'Bug found',
+                    colorByPoint: true,
+                    data: {{story_share_nested_lists|safe}}
+                }]
+            });
         });
-      }
-
-      <!--//bug trend of accumulative opened bugs & closed bugs Version 1-->
-      <!--google.load("visualization", "1", {packages:["corechart"]});-->
-      <!--google.setOnLoadCallback(drawChart1);-->
-
-      <!--function drawChart1() {-->
-        <!--var data = google.visualization.arrayToDataTable({{total_bug_and_opened_bug_pair_nested_list|safe}});-->
-
-        <!--var options = {-->
-          <!--title: 'Sprint bug trends',-->
-          <!--legend: { position: 'bottom' }-->
-        <!--};-->
-
-        <!--var chart = new google.visualization.LineChart(document.getElementById('bug_trends'));-->
-
-        <!--chart.draw(data, options);-->
-      <!--}-->
-
-      <!--//bug trend of accumulative opened bugs & closed bugs &#45;&#45; Version 2-->
-      <!--google.load('visualization', '1.0', {'packages':['bar']});-->
-      <!--google.setOnLoadCallback(drawChart1);-->
-
-      <!--function drawChart1() {-->
-        <!--var data = google.visualization.arrayToDataTable({{total_bug_and_opened_bug_pair_nested_list|safe}});-->
-
-        <!--var options = {-->
-          <!--chart: {-->
-            <!--title: 'Total Bugs VS Still Opened Bugs',-->
-            <!--subtitle: 'Total bugs number and still opened bugs  numbers by the end of every day',-->
-          <!--},-->
-          <!--bars: 'vertical',-->
-          <!--vAxis: {format: 'decimal'},-->
-          <!--height: 400,-->
-          <!--colors: ['#1b9e77', '#FF7F00']-->
-        <!--};-->
-
-        <!--var chart = new google.charts.Bar(document.getElementById('bug_trends'));-->
-
-        <!--chart.draw(data, options);-->
-
-      <!--}-->
-
-
-
     //bug trend of accumulative opened bugs & closed bugs -- Version 3
-    google.load('visualization', '1.0', {packages: ['corechart', 'bar']});
-    google.setOnLoadCallback(drawTrendlines);
+    $(function () {
+        $('#bug_trends').highcharts({
+            chart: {
+                type: 'column'
+            },
+            title: {
+                text: 'Sprint Bug Trends'
+            },
+            xAxis: {
+                categories: {{total_bug_and_opened_bug_pair_nested_list[0]|safe}}
+            },
+            yAxis: {
+                min: 0,
+                title: {
+                    text: 'Bug Numbers'
+                },
+                stackLabels: {
+                    enabled: true,
+                    style: {
+                        fontWeight: 'bold',
+                        color: (Highcharts.theme && Highcharts.theme.textColor) || 'gray'
+                    }
+                }
+            },
+            legend: {
+                align: 'right',
+                x: -30,
+                verticalAlign: 'top',
+                y: 25,
+                floating: true,
+                backgroundColor: (Highcharts.theme && Highcharts.theme.background2) || 'white',
+                borderColor: '#CCC',
+                borderWidth: 1,
+                shadow: false
+            },
+            tooltip: {
+                headerFormat: '<b>{point.x}</b><br/>',
+                pointFormat: '{series.name}: {point.y}<br/>Total: {point.stackTotal}'
+            },
+            plotOptions: {
+                column: {
+                    stacking: 'normal',
+                    dataLabels: {
+                        enabled: true,
+                        color: (Highcharts.theme && Highcharts.theme.dataLabelsColor) || 'white',
+                        style: {
+                            textShadow: '0 0 3px black'
+                        }
+                    }
+                }
+            },
+            series: [{
+                name: 'Open Bugs',
+                color: '#ff9900',
+                data: {{total_bug_and_opened_bug_pair_nested_list[1]|safe}}
+            }, {
+                name: 'Resolved Bugs',
+                color : '#dc3912',
+                data: {{total_bug_and_opened_bug_pair_nested_list[2]|safe}}
 
-    function drawTrendlines() {
-
-     var data = google.visualization.arrayToDataTable({{total_bug_and_opened_bug_pair_nested_list|safe}});
-
-          var options = {
-            width: 1000,
-            legend: { position: 'top', maxLines: 3 },
-            bar: { groupWidth: '50%' },
-            isStacked: true,
-
-          };
-
-         var chart = new google.visualization.ColumnChart(document.getElementById("bug_trends"));
-          chart.draw(data, options);
-
-        }
-
+            }, {
+                name: 'Closed Bugs',
+                color : '#3366cc',
+                data: {{total_bug_and_opened_bug_pair_nested_list[3]|safe}}
+            }]
+        });
+    });
     </script>
 
 </head>
@@ -209,7 +241,25 @@
 </div>
 <div class="bugs-in-current-sprint">
   <h4>Found bugs in current sprint</h4>
-    <div id="bug_list_div"> Bug</div>
+    <div id="bug_list_div">
+         <table class="table">
+            <tr>
+                <th>#</th>
+                <th>Key</th>
+                <th>Priority</th>
+                <th>Summary</th>
+                <th>Status</th>
+             </tr>
+            {% for item in range(sprint_bug_nested_lists|length) %}
+            <tr>
+                <td>{{item}}</td>
+                {% for l in sprint_bug_nested_lists[item] %}
+                    <td> {{l|safe}} </td>
+                {% endfor %}
+            </tr>
+            {% endfor %}
+            </table>
+    </div>
 
   <h5>Bug analysis charts</h5>
     <div id="piechart_priority_share" style="width: 500px; height: 300px;"></div>
@@ -221,23 +271,57 @@
     <div>
         <p><b>Sprint Bug Trends</b></p>
         <br />
-        <div id="bug_trends" style="width: 500px; height: 300px;"></div>
+        <div id="bug_trends" style="width: 800px; height: 300px;"></div>
     </div>
-
-
 
 </div>
 
 <div class="Previous-found-bugs-closed-in-sprint">
     <h4>Bug found by other sprint but closed in current sprint</h4>
-        <div id="Previous_found_bugs_closed_in_sprint_div"> Found by other sprint but closed in current sprint</div>
+        <div id="Previous_found_bugs_closed_in_sprint_div">
+            <table class="table">
+            <tr>
+                <th>#</th>
+                <th>Key</th>
+                <th>Priority</th>
+                <th>Summary</th>
+                <th>Status</th>
+             </tr>
+            {% for item in range(previous_bugs_closed_in_sprint|length) %}
+            <tr>
+                <td>{{item}}</td>
+                {% for l in previous_bugs_closed_in_sprint[item] %}
+                    <td> {{l|safe}} </td>
+                {% endfor %}
+            </tr>
+            {% endfor %}
+            </table>
+        </div>
     <br />
 
 </div>
 
 <div class="Automation-Found-Bug-Panel ">
     <h4>Bug found by Automation</h4>
-        <div id="automation_bug_div"> Bug Found By Automation</div>
+        <div id="automation_bug_div">
+            <table class="table">
+            <tr>
+                <th>#</th>
+                <th>Key</th>
+                <th>Priority</th>
+                <th>Summary</th>
+                <th>Status</th>
+             </tr>
+            {% for item in range(sprint_automation_found_bug_nested_lists|length) %}
+            <tr>
+                <td>{{item}}</td>
+                {% for l in sprint_automation_found_bug_nested_lists[item] %}
+                    <td> {{l|safe}} </td>
+                {% endfor %}
+            </tr>
+            {% endfor %}
+            </table>
+        </div>
     <br />
         <div>The percentage of bug found by automation are ---<b>{{sprint_automation_bug_percentage|safe}}</b>---</div>
 
@@ -245,14 +329,51 @@
 
 <div class = "Live-Defect-Panel">
     <h4>Live Defect</h4>
-        <div id="live_defect_div"> Live Defect</div>
+        <div id="live_defect_div">
+            <table class="table">
+            <tr>
+                <th>#</th>
+                <th>Key</th>
+                <th>Priority</th>
+                <th>Summary</th>
+                <th>Status</th>
+             </tr>
+            {% for item in range(sprint_live_defect_nested_lists|length) %}
+            <tr>
+                <td>{{item}}</td>
+                {% for l in sprint_live_defect_nested_lists[item] %}
+                    <td> {{l|safe}} </td>
+                {% endfor %}
+            </tr>
+            {% endfor %}
+            </table>
+        </div>
         <br />
         <div>The percentage of live defect of all the defects are ---<b>{{sprint_live_defect_percentage|safe}}</b>---</div>
 </div>
 
 <div class ="Change-Request-Panel">
     <h4>Change request</h4>
-        <div id="change_request_div"> Change Request</div>
+        <div id="change_request_div">
+            <table class="table">
+            <tr>
+                <th>#</th>
+                <th>Key</th>
+                <th>Priority</th>
+                <th>Summary</th>
+                <th>Status</th>
+             </tr>
+            {% for item in range(sprint_change_request_nested_lists|length) %}
+            <tr>
+                <td>{{item}}</td>
+                {% for l in sprint_change_request_nested_lists[item] %}
+                    <td> {{l|safe}} </td>
+                {% endfor %}
+            </tr>
+            {% endfor %}
+            </table>
+
+        </div>
         <br />
         <div>The percentage of change request of all the tasks are ---<b>{{sprint_change_request_percentage|safe}}</b>---</div>
 </div>
