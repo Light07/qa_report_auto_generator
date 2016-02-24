@@ -40,7 +40,7 @@ class JiraHelper(object):
     class Label:
         auto = "AUTO"
 
-    class TimeZone:
+    class TZone:
         Eastern = "US/Eastern"
         UTC = "UTC"
         China = "Asia/Shanghai"
@@ -197,6 +197,7 @@ class JiraHelper(object):
         ## Get the sorted date with status.
         for k in raw_status_change_dict.keys():
             str_k = str(k.asdatetime().strftime("%Y-%m-%d"))
+            # str_k = str(k.toZone(self.TZone.China).asdatetime().strftime("%Y-%m-%d"))
             if str_k not in temp_dict.keys():
                 return_dict[str_k] = raw_status_change_dict[k]
                 temp_dict[str_k] = k
@@ -206,7 +207,8 @@ class JiraHelper(object):
                 else:
                     return_dict[str_k] = raw_status_change_dict[temp_dict[str_k]]
 
-        return_dict[DateTime(issue.fields.created).asdatetime().strftime("%Y-%m-%d")] = "Created"
+        if DateTime(issue.fields.created).asdatetime().strftime("%Y-%m-%d") not in return_dict.keys():
+            return_dict[DateTime(issue.fields.created).asdatetime().strftime("%Y-%m-%d")] = "Created"
         # return_dict["id"] = id
         return_list= sorted(return_dict.iteritems(), key=lambda d:d[0])
 
@@ -217,9 +219,11 @@ class JiraHelper(object):
             while i < len(return_list)-1:
                 start =  DateTime(str(return_list[i][0]))
                 end = DateTime(str(return_list[i+1][0]))
-                while start <= end:
+                while start < end:
                     final_dict[start.asdatetime().strftime("%Y-%m-%d")] = return_list[i][1]
                     start +=1
+                if start == end:
+                    final_dict[start.asdatetime().strftime("%Y-%m-%d")] = return_list[i+1][1]
                 i +=1
         else:
             final_dict[return_list[0][0]] = return_list[0][1]
@@ -272,6 +276,7 @@ class JiraHelper(object):
             j_query_string = j_query_string + ''' and component in ({component})'''.format(component=component_filter)
 
         all_ids = self.get_task_id_by_query_string(j_query_string)
+        print all_ids
         task_status_change_date_list = []
         for id in all_ids:
             data_status = self.get_task_status_change_date(str(id))
@@ -764,8 +769,8 @@ class JiraHelper(object):
             else:
                 status = "fail"
         return status
-#
+
 # if __name__ == "__main__":
 #     jira = JiraHelper(config.jira_options, config.jira_account)
-#     bug_trends = jira.html_get_total_bug_and_open_bug_trend_by_sprint(1858, 60, "ATEAM")
-#     print bug_trends
+#     print jira.get_sprint_start_end_day(1882,60)
+#     print jira.get_task_status_change_date("ATEAM-4214")

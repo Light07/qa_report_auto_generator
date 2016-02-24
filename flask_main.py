@@ -71,7 +71,7 @@ def customized_component_index():
     elif request.method == "GET":
         return render_template('customized_component_index.html', form=form)
 
-    return  render_template('customized_component_index.html', form=form)
+    return render_template('customized_component_index.html', form=form)
 
 
 @app.route('/sprint', methods=["GET", "POST"])
