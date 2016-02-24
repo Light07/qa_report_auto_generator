@@ -231,6 +231,5 @@ def get_report():
     return render
 
 if __name__ == '__main__':
-    # app.run(debug=True, threaded=True)
+    # app.run(debug=True, threaded=False)
     app.run(host="0.0.0.0", debug=False, threaded=True)
-

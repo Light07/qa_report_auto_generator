@@ -74,7 +74,7 @@
     }
 
     </style>
-    <script type="text/javascript" src="//code.jquery.com/jquery-1.9.1.js"></script>
+    <script type="text/javascript" src="http://code.jquery.com/jquery-1.9.1.js"></script>
     <script src="https://code.highcharts.com/highcharts.js"></script>
     <script src="https://code.highcharts.com/modules/exporting.js"></script>
     <script type="text/javascript">
@@ -89,7 +89,7 @@
                 type: 'pie'
             },
             title: {
-                text: 'Bug share by Priority'
+                text: 'Bug share by priority'
             },
 
             plotOptions: {
@@ -122,7 +122,7 @@
                     type: 'pie'
                 },
                 title: {
-                    text: 'Bug share by Priority'
+                    text: 'Bug share by story'
                 },
 
                 plotOptions: {
@@ -262,16 +262,15 @@
     </div>
 
   <h5>Bug analysis charts</h5>
-    <div id="piechart_priority_share" style="width: 500px; height: 300px;"></div>
-        <!--<div>The detail priority related bug info are:<br />{{bug_priority_share_detail_info|safe}}</div>-->
+    <div id="piechart_priority_share" style="min-width: 310px; height: 400px; max-width: 500px;" align="left"></div>
 
-    <div id="piechart_story_share" style="width: 500px; height: 300px;"></div>
+    <div id="piechart_story_share" style="min-width: 310px; height: 400px; max-width: 600px;" align="left"></div>
         <div><b>Bugs NOT related to any of stories in sprint:</b> <br />{{story_share_detail_info|safe}}</div>
     <br />
     <div>
         <p><b>Sprint Bug Trends</b></p>
         <br />
-        <div id="bug_trends" style="width: 800px; height: 300px;"></div>
+        <div id="bug_trends" style="min-width: 310px; height: 400px; margin: 0 auto"></div>
     </div>
 
 </div>

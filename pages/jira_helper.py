@@ -764,8 +764,8 @@ class JiraHelper(object):
             else:
                 status = "fail"
         return status
-
-if __name__ == "__main__":
-    jira = JiraHelper(config.jira_options, config.jira_account)
-    bug_trends = jira.html_get_total_bug_and_open_bug_trend_by_sprint(1858, 60, "ATEAM")
-    print bug_trends
+#
+# if __name__ == "__main__":
+#     jira = JiraHelper(config.jira_options, config.jira_account)
+#     bug_trends = jira.html_get_total_bug_and_open_bug_trend_by_sprint(1858, 60, "ATEAM")
+#     print bug_trends
