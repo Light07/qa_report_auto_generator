@@ -33,3 +33,5 @@ Name            JQL
 Android	        "component in ("Efekta 15 Smartphone Android", Android)"
 3.Fix issue of the return value of resolved date -- get_issue_resolved_status_by_date.
 4.Add customized title for customized components.
+
+4.2 Switch google charts to Hicharts, no need vpn to view the generated charts.
