@@ -134,6 +134,8 @@ def get_report():
         standard_tasks_info_by_sprint = jira.get_standard_tasks_info_by_sprint(sprint_id, project_name)
         standard_tasks_info_by_sprint = jira.get_filtered_task_info_by_component(standard_tasks_info_by_sprint, session["quick_filter"])
         #
+        unplanned_tasks_info = jira.get_unplanned_tasks_by_sprint(sprint_id, board_id, project_name, session["quick_filter"])
+        #
         raw_bug_id_list = jira.get_bug_id_by_sprint(sprint_id, board_id, project_name)
         raw_bug_id_list = jira.get_filtered_task_id_by_component(raw_bug_id_list, session["quick_filter"])
         #
@@ -164,6 +166,8 @@ def get_report():
         standard_task_id_list = jira.get_standard_tasks_id_by_sprint(sprint_id, project_name)
         standard_tasks_info_by_sprint = jira.get_standard_tasks_info_by_sprint(sprint_id, project_name)
         #
+        unplanned_tasks_info = jira.get_unplanned_tasks_by_sprint(sprint_id, board_id, project_name)
+        #
         raw_bug_id_list = jira.get_bug_id_by_sprint(sprint_id, board_id, project_name)
         raw_bug_list = jira.get_bug_info_by_sprint(sprint_id, board_id, project_name)
         #
@@ -182,6 +186,10 @@ def get_report():
         bug_trends = jira.html_get_total_bug_and_open_bug_trend_by_sprint(sprint_id, board_id, project_name)
 
     actual_points = jira.get_actual_story_points_by_sprint(standard_tasks_info_by_sprint)
+
+    unplanned_story_points = jira.html_get_umplanned_story_porints_by_sprint(unplanned_tasks_info)
+
+    unplanned_nest_lists = jira.html_get_unplanned_tasks_by_sprint(unplanned_tasks_info)
 
     sprint_bug_nested_list = jira.html_get_bug_list_by_tasks(raw_bug_list)
 
@@ -211,6 +219,7 @@ def get_report():
                             sprint_name_string=sprint_name,\
                             qa_resource = qa,\
                             sprint_status=sprint_status, actual_story_points=actual_points, \
+                            unplanned_story_points=unplanned_story_points, unplanned_nest_lists=unplanned_nest_lists, \
                             sprint_bug_nested_lists=sprint_bug_nested_list,\
                             bug_priority_nested_lists=bug_priority_list, \
                             bug_priority_share_detail_info=bug_priority_detail,\

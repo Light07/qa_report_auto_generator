@@ -229,6 +229,36 @@ class JiraHelper(object):
             final_dict[return_list[0][0]] = return_list[0][1]
         return final_dict #sorted(final_dict.iteritems(), key=lambda d:d[0]) #
 
+    def get_unplanned_tasks_by_sprint(self, sprint_id, id_of_board, project, component_filter=None):
+        return_list = []
+        sprint_info = self.get_sprint_info(sprint_id, id_of_board)
+        start_time = sprint_info["startDate"]
+
+        start_date = DateTime(str(sprint_info["startDate"]) + ' ' +  "US/Eastern")
+        end_date = DateTime(str(sprint_info["endDate"]) + ' ' +  "US/Eastern")
+        j_query_string = '''project = {project} and issuetype in ({issue_type1}) and issuetype not in ({issue_type2}) and created >= {start_day} AND created <= {end_day} and sprint = {s_id}'''\
+                .format(project= project, issue_type1= self.IssueType.StandardType, issue_type2= self.IssueType.Bug, start_day=start_date.asdatetime().strftime("%Y-%m-%d"), end_day=end_date.asdatetime().strftime("%Y-%m-%d"), s_id=sprint_id)
+        all_info = self.get_task_info_by_query_string(j_query_string)
+
+        if component_filter:
+            j_query_string = j_query_string + ''' and component in ({component})'''.format(component=component_filter)
+
+        for s in all_info:
+            if s["Created"] > start_time:
+                return_list.append(s)
+
+        return return_list
+
+    def html_get_unplanned_tasks_by_sprint(self, unplanned_task_lists):
+        return self.html_get_bug_list_by_tasks(unplanned_task_lists)
+
+    def html_get_umplanned_story_porints_by_sprint(self, unplanned_task_lists):
+        s_points = 0
+        for item in unplanned_task_lists:
+            if item["Story_point"]:
+                s_points += int(item["Story_point"])
+        return s_points
+
     def get_closed_task_num_group_by_date(self, j_query):
         '''
         return the  date number pair with given jquery.
@@ -762,15 +792,14 @@ class JiraHelper(object):
 
     def html_get_sprint_status(self, sprint_id, id_of_board=config.board_id):
         sprint_info = self.get_sprint_info(sprint_id, id_of_board)
-        status = None
-        if str(sprint_info["completeDate"]) != str(status):
+        status = "In Progress"
+        if str(sprint_info["completeDate"]) != "None":
             if DateTime(sprint_info["completeDate"]) < DateTime(sprint_info["endDate"]) + config.delay_day:
-                status = "success"
+                status = "Success"
             else:
-                status = "fail"
+                status = "Fail"
         return status
 
 # if __name__ == "__main__":
 #     jira = JiraHelper(config.jira_options, config.jira_account)
-#     print jira.get_sprint_start_end_day(1882,60)
-#     print jira.get_task_status_change_date("ATEAM-4214")
+#     print jira.html_get_sprint_status(1882, 60)

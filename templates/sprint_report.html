@@ -2,10 +2,10 @@
 
 <head>
     <style>
-        .success {
+        .Success {
             color: green;
         }
-        .fail {
+        .Fail {
             color: red;
         }
 
@@ -239,6 +239,32 @@
         <div>Sprint Status: <b class = "{{sprint_status|safe}}">"{{sprint_status|safe}}"</b>, actual sprint story points completed: <b>"{{actual_story_points|safe}}"</b> .</div>
 
 </div>
+
+<div class="Unplanned-tasks">
+    <h4>Unplanned Tasks</h4>
+        <div>The total unplanned story points are: <b>{{unplanned_story_points|safe}}"</b> .</div>
+        <div id="unplanned_stories_div">
+         <table class="table">
+            <tr>
+                <th>#</th>
+                <th>Key</th>
+                <th>Priority</th>
+                <th>Summary</th>
+                <th>Status</th>
+             </tr>
+            {% for item in range(unplanned_nest_lists|length) %}
+            <tr>
+                <td>{{item}}</td>
+                {% for l in unplanned_nest_lists[item] %}
+                    <td> {{l|safe}} </td>
+                {% endfor %}
+            </tr>
+            {% endfor %}
+            </table>
+    </div>
+
+</div>
+
 <div class="bugs-in-current-sprint">
   <h4>Found bugs in current sprint</h4>
     <div id="bug_list_div">
