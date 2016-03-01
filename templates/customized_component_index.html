@@ -48,11 +48,18 @@
         {{form.board_id(id='board_id')}}
 
     {{ form.quick_filter.label }}
-        <select name="quick_filter" >
+        <select name="quick_filter">
             {% for o in form.quick_filter.choices %}
             <option name="{{ o[0]}}" SELECTED>{{ o[1] }}</option>
             {% endfor %}
         </select>
+
+      <!--{{ form.quick_filter.label }}-->
+        <!--<p>Select <b>none</b> of the choice will show report  </p>-->
+        <!--{% for o in form.quick_filter.choices %}-->
+        <!--<INPUT TYPE=CHECKBOX name="{{ o[0]}}" SELECTED>{{ o[1] }}</INPUT>-->
+        <!--{% endfor %}-->
+
 
     {{ form.sprint_name.label }}
         <select name="sprint_name" >

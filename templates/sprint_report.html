@@ -160,7 +160,7 @@
             yAxis: {
                 min: 0,
                 title: {
-                    text: 'Bug Numbers'
+                    text: 'Bug Counts'
                 },
                 stackLabels: {
                     enabled: true,
@@ -226,7 +226,7 @@
     <h1>{{project_required|safe}} Sprint Report - <body>{{sprint_name_string|safe}}</body></h1>
     {% endif %}
 
-        <nav>
+    <nav>
         <ul class="menu">
             <li  style=" text-align:right;"><a href="{{ url_for('success') }}">DownLoad Sprint Report</a></li>
         </ul>
@@ -234,10 +234,14 @@
     <h5>QA resource:"{{qa_resource|safe}}"</h5>
 </div>
 
-<div class="Sprint-status">
-    <h4>Sprint Status</h4>
-        <div>Sprint Status: <b class = "{{sprint_status|safe}}">"{{sprint_status|safe}}"</b>, actual sprint story points completed: <b>"{{actual_story_points|safe}}"</b> .</div>
 
+<div class="Sprint-status">
+    {% if project_required == "ME" %}
+    <h4>Sprint Status</h4>
+        <div>Actual story points in current sprint: <b>"{{actual_story_points|safe}}."</b></div>
+    {% else %}
+        <div>Sprint Status: <b class = "{{sprint_status|safe}}">"{{sprint_status|safe}}"</b>, actual sprint story points completed: <b>"{{actual_story_points|safe}}."</b></div>
+    {% endif %}
 </div>
 
 <div class="Unplanned-tasks">

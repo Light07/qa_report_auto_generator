@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 
 from flask_wtf import Form
-from wtforms import StringField, IntegerField, SubmitField, PasswordField, validators, HiddenField, SelectField
+from wtforms import StringField, IntegerField, SubmitField, PasswordField, validators, HiddenField, SelectField, \
+    SelectMultipleField
 from wtforms.validators import Optional
 
 import config
@@ -33,6 +34,7 @@ class EngageCustomizedForm(Form):
     project_name = HiddenField(StringField(u'Project Name'), [validators.DataRequired("Please input the project name")])
     sprint_name = SelectField(u'Sprint Name', coerce=str)
     board_id = HiddenField(IntegerField(u'Board Id'), [validators.DataRequired("Please input a integer as board id.")])
+    # quick_filter = SelectMultipleField(u'Quick Filter',coerce=str, choices=config.quick_filter_choice)
     quick_filter = SelectField(u'Quick Filter',coerce=str, choices=config.quick_filter_choice)
     submit = SubmitField(u'Submit')
  # validators=[Optional()],

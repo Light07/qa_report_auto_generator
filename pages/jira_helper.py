@@ -367,6 +367,7 @@ class JiraHelper(object):
         issue_dict["Created"] = issue.fields.created
         issue_dict["Story_point"] = issue.fields.customfield_10002
         issue_dict["Components"] = issue.fields.components
+        issue_dict["Assignee"] = issue.fields.assignee
         return issue_dict
 
     def get_filtered_task_info_by_component(self, task_lists, component_value):
@@ -374,6 +375,14 @@ class JiraHelper(object):
         for l in task_lists:
             if l['Components']:
                 if str(component_value) in str(l['Components']):
+                    return_list.append(l)
+        return return_list
+
+    def get_filtered_task_info_by_assignee(self, task_lists, assignee_value):
+        return_list = []
+        for l in task_lists:
+            if l['Assignee']:
+                if str(l['Assignee']) in str(assignee_value):
                     return_list.append(l)
         return return_list
 
@@ -802,4 +811,5 @@ class JiraHelper(object):
 
 # if __name__ == "__main__":
 #     jira = JiraHelper(config.jira_options, config.jira_account)
-#     print jira.html_get_sprint_status(1882, 60)
+#     print jira.get_task_info_by_id('ME-2373')
+#     # print jira.html_get_sprint_status(1882, 60)

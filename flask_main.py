@@ -60,7 +60,8 @@ def customized_component_index():
 
     if request.method== "POST" :
         if form.submit.data and form.validate():
-            session["quick_filter"] = form.quick_filter.data
+            if form.quick_filter.data != "Show All":
+                session["quick_filter"] = form.quick_filter.data
             session["choice_sprint"] = form.sprint_name.data
 
             return redirect(url_for('get_report'))
