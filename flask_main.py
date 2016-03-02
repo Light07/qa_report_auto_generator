@@ -214,6 +214,7 @@ def get_report():
     story_list= jira.get_task_id_that_has_linked_task(raw_bug_id_list)
     story_share = jira.html_get_linked_issue_num_group_by_story(story_list)
     story_share_detail = jira.html_get_linked_issue_detail_group_by_story(story_list, raw_bug_id_list)[1]
+    story_share_detail = jira.html_get_bug_list_by_tasks(story_share_detail)
 
     render = render_template('sprint_report.html', project_required=project_name, \
                             customized_component=session["quick_filter"] if "quick_filter" in session else None, \

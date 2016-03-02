@@ -75,6 +75,7 @@
 
     </style>
     <script type="text/javascript" src="http://code.jquery.com/jquery-1.9.1.js"></script>
+    <script type="text/javascript" src="http://www.kryogenix.org/code/browser/sorttable/sorttable.js"></script>
     <script src="https://code.highcharts.com/highcharts.js"></script>
     <script src="https://code.highcharts.com/modules/exporting.js"></script>
     <script type="text/javascript">
@@ -160,7 +161,7 @@
             yAxis: {
                 min: 0,
                 title: {
-                    text: 'Bug Counts'
+                    text: 'Bug Count'
                 },
                 stackLabels: {
                     enabled: true,
@@ -226,30 +227,31 @@
     <h1>{{project_required|safe}} Sprint Report - <body>{{sprint_name_string|safe}}</body></h1>
     {% endif %}
 
-    <nav>
-        <ul class="menu">
-            <li  style=" text-align:right;"><a href="{{ url_for('success') }}">DownLoad Sprint Report</a></li>
-        </ul>
-    </nav>
+    <h5>QA Resources: "{{qa_resource|safe}}"</h5>
 
-        <h5>QA resource:"{{qa_resource|safe}}"</h5>
+        <nav>
+            <ul class="menu">
+                <li  style=" text-align:right; list-style-type:none"><a href="{{ url_for('success') }}">Download Sprint Report</a></li>
+            </ul>
+        </nav>
+
 </div>
 
 
 <div class="Sprint-status">
     {% if project_required == "ME" %}
     <h4>Sprint Status</h4>
-        <div>Actual story points in current sprint: <b>"{{actual_story_points|safe}}."</b></div>
+        <div>Actual story points in current sprint: <b>{{actual_story_points|safe}}</b>.</div>
     {% else %}
-        <div>Sprint Status: <b class = "{{sprint_status|safe}}">"{{sprint_status|safe}}"</b>, actual sprint story points completed: <b>"{{actual_story_points|safe}}."</b></div>
+        <div>Sprint Status: <b class = "{{sprint_status|safe}}">"{{sprint_status|safe}}"</b>, actual sprint story points completed: <b>{{actual_story_points|safe}}</b>.</div>
     {% endif %}
 </div>
 
 <div class="Unplanned-tasks">
     <h4>Unplanned Tasks</h4>
-        <div>The total unplanned story points are: <b>"{{unplanned_story_points|safe}}"</b> .</div>
+        <div>Total unplanned story points: <b>{{unplanned_story_points|safe}}</b> .</div>
         <div id="unplanned_stories_div">
-         <table class="table">
+         <table class="table sortable">
             <tr>
                 <th>#</th>
                 <th>Key</th>
@@ -271,9 +273,9 @@
 </div>
 
 <div class="bugs-in-current-sprint">
-  <h4>Found bugs in current sprint</h4>
+  <h4>Bugs found in current sprint</h4>
     <div id="bug_list_div">
-         <table class="table">
+         <table class="table sortable">
             <tr>
                 <th>#</th>
                 <th>Key</th>
@@ -296,7 +298,26 @@
     <div id="piechart_priority_share" style="min-width: 310px; height: 400px; max-width: 500px;" align="left"></div>
 
     <div id="piechart_story_share" style="min-width: 310px; height: 400px; max-width: 600px;" align="left"></div>
-        <div><b>Bugs NOT related to any of stories in sprint:</b> <br />{{story_share_detail_info|safe}}</div>
+        <h4>Bugs not related to any stories in sprint</h4>
+        <table class="table sortable">
+            <tr>
+                <th>#</th>
+                <th>Key</th>
+                <th>Priority</th>
+                <th>Summary</th>
+                <th>Status</th>
+             </tr>
+            {% for item in range(story_share_detail_info|length) %}
+            <tr>
+                <td>{{item}}</td>
+                {% for l in story_share_detail_info[item] %}
+                    <td> {{l|safe}} </td>
+                {% endfor %}
+            </tr>
+            {% endfor %}
+        </table>
+        <!--<div><b>Bugs not related to any stories in sprint:</b> <br />{{story_share_detail_info|safe}}</div>-->
+
     <br />
     <div>
         <p><b>Sprint Bug Trends</b></p>
@@ -307,9 +328,9 @@
 </div>
 
 <div class="Previous-found-bugs-closed-in-sprint">
-    <h4>Bug found by other sprint but closed in current sprint</h4>
+    <h4>Bugs found in other sprint but closed in current sprint</h4>
         <div id="Previous_found_bugs_closed_in_sprint_div">
-            <table class="table">
+            <table class="table sortable">
             <tr>
                 <th>#</th>
                 <th>Key</th>
@@ -332,9 +353,9 @@
 </div>
 
 <div class="Automation-Found-Bug-Panel ">
-    <h4>Bug found by Automation</h4>
+    <h4>Bugs found by automation</h4>
         <div id="automation_bug_div">
-            <table class="table">
+            <table class="table sortable">
             <tr>
                 <th>#</th>
                 <th>Key</th>
@@ -353,14 +374,14 @@
             </table>
         </div>
     <br />
-        <div>The percentage of bug found by automation are ---<b>{{sprint_automation_bug_percentage|safe}}</b>---</div>
+        <div>Percentage of bugs found by automation: <b>{{sprint_automation_bug_percentage|safe}}</b></div>
 
 </div>
 
 <div class = "Live-Defect-Panel">
-    <h4>Live Defect</h4>
+    <h4>Live Defects</h4>
         <div id="live_defect_div">
-            <table class="table">
+            <table class="table sortable">
             <tr>
                 <th>#</th>
                 <th>Key</th>
@@ -379,13 +400,13 @@
             </table>
         </div>
         <br />
-        <div>The percentage of live defect of all the defects are ---<b>{{sprint_live_defect_percentage|safe}}</b>---</div>
+        <div>Percentage of tasks which are live defects: <b>{{sprint_live_defect_percentage|safe}}</b></div>
 </div>
 
 <div class ="Change-Request-Panel">
-    <h4>Change request</h4>
+    <h4>Change Requests</h4>
         <div id="change_request_div">
-            <table class="table">
+            <table class="table sortable">
             <tr>
                 <th>#</th>
                 <th>Key</th>
@@ -405,7 +426,7 @@
 
         </div>
         <br />
-        <div>The percentage of change request of all the tasks are ---<b>{{sprint_change_request_percentage|safe}}</b>---</div>
+        <div>Percentage of tasks which are change requests: <b>{{sprint_change_request_percentage|safe}}</b></div>
 </div>
 </div>
 

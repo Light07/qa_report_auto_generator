@@ -711,7 +711,12 @@ class JiraHelper(object):
         for id in bug_id_list_by_sprint:
             if str(id) not in story_related_issue_id:
                 no_story_related_issue.append(str(id))
-        return story_related_issue_detail, no_story_related_issue
+
+        no_story_related_issue_list = []
+        for l in no_story_related_issue:
+            no_story_related_issue_list.append(self.get_task_info_by_id(l))
+
+        return story_related_issue_detail, no_story_related_issue_list
 
     def html_get_linked_issue_num_group_by_story(self, task_id_list_has_linked_task):
         '''
@@ -811,5 +816,3 @@ class JiraHelper(object):
 
 # if __name__ == "__main__":
 #     jira = JiraHelper(config.jira_options, config.jira_account)
-#     print jira.get_task_info_by_id('ME-2373')
-#     # print jira.html_get_sprint_status(1882, 60)
