@@ -9,13 +9,13 @@
             color: red;
         }
 
-    <!--body {-->
-        <!--font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;-->
-        <!--font-size: 14px;-->
-        <!--line-height: 1.42857143;-->
-        <!--color: #333;-->
-        <!--background-color: #fff;-->
-    <!--}-->
+    body {
+        font-family: 'Microsoft YaHei',Helvetica,Arial,sans-serif;
+        font-size: 14px;
+        line-height: 1.42857143;
+        color: #333;
+        background-color: #fff;
+    }
         table th {
             background-color: #999;
         }
@@ -231,7 +231,8 @@
             <li  style=" text-align:right;"><a href="{{ url_for('success') }}">DownLoad Sprint Report</a></li>
         </ul>
     </nav>
-    <h5>QA resource:"{{qa_resource|safe}}"</h5>
+
+        <h5>QA resource:"{{qa_resource|safe}}"</h5>
 </div>
 
 

@@ -1,0 +1,1133 @@
+<html>
+
+<head>
+    <style>
+        .Success {
+            color: green;
+        }
+        .Fail {
+            color: red;
+        }
+
+    body {
+        font-family: 'Microsoft YaHei',Helvetica,Arial,sans-serif;
+        font-size: 14px;
+        line-height: 1.42857143;
+        color: #333;
+        background-color: #fff;
+    }
+        table th {
+            background-color: #999;
+        }
+        table th:nth-child(2),
+        table td:nth-child(2) {
+            white-space: nowrap;
+            word-break: keep-all;
+        }
+        table {
+    background-color: transparent;
+        border-spacing: 0;
+    border-collapse: collapse;
+    }
+    caption {
+    padding-top: 8px;
+    padding-bottom: 8px;
+    color: #777;
+    text-align: left;
+    }
+    th {
+    text-align: left;
+    }
+    .table {
+    width: 100%;
+    max-width: 100%;
+    margin-bottom: 20px;
+    }
+    .table > thead > tr > th,
+    .table > tbody > tr > th,
+    .table > tfoot > tr > th,
+    .table > thead > tr > td,
+    .table > tbody > tr > td,
+    .table > tfoot > tr > td {
+    padding: 4px;
+    line-height: 1.42857143;
+    vertical-align: top;
+    border-top: 1px solid #ddd;
+    }
+    .table > thead > tr > th {
+    vertical-align: bottom;
+    border-bottom: 2px solid #ddd;
+    }
+    .table > caption + thead > tr:first-child > th,
+    .table > colgroup + thead > tr:first-child > th,
+    .table > thead:first-child > tr:first-child > th,
+    .table > caption + thead > tr:first-child > td,
+    .table > colgroup + thead > tr:first-child > td,
+    .table > thead:first-child > tr:first-child > td {
+    border-top: 0;
+    }
+    .table > tbody + tbody {
+    border-top: 2px solid #ddd;
+    }
+    .table .table {
+    background-color: #fff;
+    }
+
+    </style>
+    <script type="text/javascript" src="http://code.jquery.com/jquery-1.9.1.js"></script>
+    <script src="https://code.highcharts.com/highcharts.js"></script>
+    <script src="https://code.highcharts.com/modules/exporting.js"></script>
+    <script type="text/javascript">
+
+    //PieChart Bug priority share definition.
+    $(function () {
+        $('#piechart_priority_share').highcharts({
+            chart: {
+                plotBackgroundColor: null,
+                plotBorderWidth: null,
+                plotShadow: false,
+                type: 'pie'
+            },
+            title: {
+                text: 'Bug share by priority'
+            },
+
+            plotOptions: {
+                pie: {
+                    allowPointSelect: true,
+                    cursor: 'pointer',
+                    dataLabels: {
+                        enabled: true,
+                        format: '<b>{point.name}</b>: {point.percentage:.1f} %',
+                        style: {
+                            color: (Highcharts.theme && Highcharts.theme.contrastTextColor) || 'black'
+                        }
+                    }
+                }
+            },
+            series: [{
+                    name: 'Bug found',
+                colorByPoint: true,
+                data: [{'y': 1, 'name': '"Blocker"'}, {'y': 38, 'name': '"Major"'}, {'y': 3, 'name': '"Critical"'}, {'y': 4, 'name': '"Minor"'}]
+            }]
+        });
+    });
+    // PieChart story share definition.
+     $(function () {
+            $('#piechart_story_share').highcharts({
+                chart: {
+                    plotBackgroundColor: null,
+                    plotBorderWidth: null,
+                    plotShadow: false,
+                    type: 'pie'
+                },
+                title: {
+                    text: 'Bug share by story'
+                },
+
+                plotOptions: {
+                    pie: {
+                        allowPointSelect: true,
+                        cursor: 'pointer',
+                        dataLabels: {
+                            enabled: true,
+                            format: '<b>{point.name}</b>: {point.percentage:.1f} %',
+                            style: {
+                                color: (Highcharts.theme && Highcharts.theme.contrastTextColor) || 'black'
+                            }
+                        }
+                    }
+                },
+                series: [{
+                        name: 'Bug found',
+                    colorByPoint: true,
+                    data: [{"y": 6, "name": "\"ME-2150\""}, {"y": 2, "name": "\"ME-731\""}, {"y": 3, "name": "\"ME-2515\""}, {"y": 1, "name": "\"ME-2679\""}, {"y": 5, "name": "\"ME-2644\""}, {"y": 1, "name": "\"ME-2671\""}, {"y": 2, "name": "\"ME-2674\""}, {"y": 1, "name": "\"MPF-52\""}]
+                }]
+            });
+        });
+    //bug trend of accumulative opened bugs & closed bugs -- Version 3
+    $(function () {
+        $('#bug_trends').highcharts({
+            chart: {
+                type: 'column'
+            },
+            title: {
+                text: 'Sprint Bug Trends'
+            },
+            xAxis: {
+                categories: ['2016-01-18', '2016-01-19', '2016-01-20', '2016-01-21', '2016-01-22', '2016-01-23', '2016-01-24', '2016-01-25', '2016-01-26', '2016-01-27', '2016-01-28', '2016-01-29', '2016-01-30', '2016-01-31', '2016-02-01', '2016-02-02', '2016-02-03', '2016-02-04', '2016-02-05', '2016-02-06']
+            },
+            yAxis: {
+                min: 0,
+                title: {
+                    text: 'Bug Counts'
+                },
+                stackLabels: {
+                    enabled: true,
+                    style: {
+                        fontWeight: 'bold',
+                        color: (Highcharts.theme && Highcharts.theme.textColor) || 'gray'
+                    }
+                }
+            },
+            legend: {
+                align: 'right',
+                x: -30,
+                verticalAlign: 'top',
+                y: 25,
+                floating: true,
+                backgroundColor: (Highcharts.theme && Highcharts.theme.background2) || 'white',
+                borderColor: '#CCC',
+                borderWidth: 1,
+                shadow: false
+            },
+            tooltip: {
+                headerFormat: '<b>{point.x}</b><br/>',
+                pointFormat: '{series.name}: {point.y}<br/>Total: {point.stackTotal}'
+            },
+            plotOptions: {
+                column: {
+                    stacking: 'normal',
+                    dataLabels: {
+                        enabled: true,
+                        color: (Highcharts.theme && Highcharts.theme.dataLabelsColor) || 'white',
+                        style: {
+                            textShadow: '0 0 3px black'
+                        }
+                    }
+                }
+            },
+            series: [{
+                name: 'Open Bugs',
+                color: '#ff9900',
+                data: [0, 2, 4, 4, 5, 5, 4, 7, 9, 7, 8, 6, 6, 6, 7, 5, 10, 10, 10, 10]
+            }, {
+                name: 'Resolved Bugs',
+                color : '#dc3912',
+                data: [0, 0, 2, 1, 0, 0, 1, 1, 3, 1, 1, 7, 7, 7, 7, 4, 4, 5, 5, 5]
+
+            }, {
+                name: 'Closed Bugs',
+                color : '#3366cc',
+                data: [0, 0, 1, 5, 6, 6, 6, 8, 8, 12, 12, 12, 12, 12, 12, 18, 20, 20, 20, 20]
+            }]
+        });
+    });
+    </script>
+
+</head>
+<body>
+<div id="loading"></div>
+<div id="content">
+<div class="page-header" style=" text-align:center; ">
+    
+    <h1>ME Android Sprint Report - <body>Engage S88 (1/18 - 2/5)</body></h1>
+    
+
+    <nav>
+        <ul class="menu">
+            <li  style=" text-align:right;"><a href="/success">DownLoad Sprint Report</a></li>
+        </ul>
+    </nav>
+    <h5>QA resource:"test"</h5>
+</div>
+
+
+<div class="Sprint-status">
+    
+    <h4>Sprint Status</h4>
+        <div>Actual story points in current sprint: <b>"80."</b></div>
+    
+</div>
+
+<div class="Unplanned-tasks">
+    <h4>Unplanned Tasks</h4>
+        <div>The total unplanned story points are: <b>"4"</b> .</div>
+        <div id="unplanned_stories_div">
+         <table class="table">
+            <tr>
+                <th>#</th>
+                <th>Key</th>
+                <th>Priority</th>
+                <th>Summary</th>
+                <th>Status</th>
+             </tr>
+            
+            <tr>
+                <td>0</td>
+                
+                    <td> <a href="https://jira.englishtown.com/browse/ME-2669">ME-2669</a> </td>
+                
+                    <td> Major </td>
+                
+                    <td> Replace the third-party material dialog box by the one in the support library. </td>
+                
+                    <td> Closed </td>
+                
+            </tr>
+            
+            <tr>
+                <td>1</td>
+                
+                    <td> <a href="https://jira.englishtown.com/browse/ME-2644">ME-2644</a> </td>
+                
+                    <td> Major </td>
+                
+                    <td> Refactor video view integrating Exo Player as a replacement of Vitamio </td>
+                
+                    <td> UAT GLed </td>
+                
+            </tr>
+            
+            <tr>
+                <td>2</td>
+                
+                    <td> <a href="https://jira.englishtown.com/browse/ME-2621">ME-2621</a> </td>
+                
+                    <td> Major </td>
+                
+                    <td> Need a qa tool to unlock all units in current level locally </td>
+                
+                    <td> Closed </td>
+                
+            </tr>
+            
+            <tr>
+                <td>3</td>
+                
+                    <td> <a href="https://jira.englishtown.com/browse/ME-2613">ME-2613</a> </td>
+                
+                    <td> Major </td>
+                
+                    <td> As DLA B2B, we want change our product name to be EF English Live, so it can be aligned with B2C one </td>
+                
+                    <td> Closed </td>
+                
+            </tr>
+            
+            <tr>
+                <td>4</td>
+                
+                    <td> <a href="https://jira.englishtown.com/browse/ME-2597">ME-2597</a> </td>
+                
+                    <td> Major </td>
+                
+                    <td> Added Member Id Accessor to Domain Layer for Tracking. </td>
+                
+                    <td> Closed </td>
+                
+            </tr>
+            
+            <tr>
+                <td>5</td>
+                
+                    <td> <a href="https://jira.englishtown.com/browse/ME-2570">ME-2570</a> </td>
+                
+                    <td> Blocker </td>
+                
+                    <td> Need to auto-clear course-structure after login on both UAT&QA  </td>
+                
+                    <td> Closed </td>
+                
+            </tr>
+            
+            </table>
+    </div>
+
+</div>
+
+<div class="bugs-in-current-sprint">
+  <h4>Found bugs in current sprint</h4>
+    <div id="bug_list_div">
+         <table class="table">
+            <tr>
+                <th>#</th>
+                <th>Key</th>
+                <th>Priority</th>
+                <th>Summary</th>
+                <th>Status</th>
+             </tr>
+            
+            <tr>
+                <td>0</td>
+                
+                    <td> <a href="https://jira.englishtown.com/browse/ME-2685">ME-2685</a> </td>
+                
+                    <td> Major </td>
+                
+                    <td> Download unit 1 and 2 while old content version, and pass offline, then update content and online, unit 2 - lesson 2 should keep passed because no new module is added </td>
+                
+                    <td> In Progress </td>
+                
+            </tr>
+            
+            <tr>
+                <td>1</td>
+                
+                    <td> <a href="https://jira.englishtown.com/browse/ME-2681">ME-2681</a> </td>
+                
+                    <td> Major </td>
+                
+                    <td> Login with old content version, change level after content version update, go to module, crash </td>
+                
+                    <td> Development To Do </td>
+                
+            </tr>
+            
+            <tr>
+                <td>2</td>
+                
+                    <td> <a href="https://jira.englishtown.com/browse/ME-2680">ME-2680</a> </td>
+                
+                    <td> Major </td>
+                
+                    <td> Download two units in old content, updating content will clear coursestructure, download first unit, second unit shouldn't be downloaded </td>
+                
+                    <td> Development To Do </td>
+                
+            </tr>
+            
+            <tr>
+                <td>3</td>
+                
+                    <td> <a href="https://jira.englishtown.com/browse/ME-2679">ME-2679</a> </td>
+                
+                    <td> Major </td>
+                
+                    <td> Crash occurs when quit from video </td>
+                
+                    <td> Closed </td>
+                
+            </tr>
+            
+            <tr>
+                <td>4</td>
+                
+                    <td> <a href="https://jira.englishtown.com/browse/ME-2677">ME-2677</a> </td>
+                
+                    <td> Major </td>
+                
+                    <td> While downloading first two units in level 12, enter lessons in unit 1 randomly, crash </td>
+                
+                    <td> Closed </td>
+                
+            </tr>
+            
+            <tr>
+                <td>5</td>
+                
+                    <td> <a href="https://jira.englishtown.com/browse/ME-2676">ME-2676</a> </td>
+                
+                    <td> Major </td>
+                
+                    <td> The status is not correct when retry in recording </td>
+                
+                    <td> Open </td>
+                
+            </tr>
+            
+            <tr>
+                <td>6</td>
+                
+                    <td> <a href="https://jira.englishtown.com/browse/ME-2675">ME-2675</a> </td>
+                
+                    <td> Major </td>
+                
+                    <td> App will restart when quit from the playing audio </td>
+                
+                    <td> Closed </td>
+                
+            </tr>
+            
+            <tr>
+                <td>7</td>
+                
+                    <td> <a href="https://jira.englishtown.com/browse/ME-2674">ME-2674</a> </td>
+                
+                    <td> Major </td>
+                
+                    <td> App will restart when retry video </td>
+                
+                    <td> Closed </td>
+                
+            </tr>
+            
+            <tr>
+                <td>8</td>
+                
+                    <td> <a href="https://jira.englishtown.com/browse/ME-2673">ME-2673</a> </td>
+                
+                    <td> Major </td>
+                
+                    <td> Pass activities using debug pass tool, got an mediaplayer crash </td>
+                
+                    <td> Closed </td>
+                
+            </tr>
+            
+            <tr>
+                <td>9</td>
+                
+                    <td> <a href="https://jira.englishtown.com/browse/ME-2672">ME-2672</a> </td>
+                
+                    <td> Major </td>
+                
+                    <td> App always restart when clear course data </td>
+                
+                    <td> Closed </td>
+                
+            </tr>
+            
+            <tr>
+                <td>10</td>
+                
+                    <td> <a href="https://jira.englishtown.com/browse/ME-2671">ME-2671</a> </td>
+                
+                    <td> Major </td>
+                
+                    <td> Crash occurs in Final Task when retry the story line </td>
+                
+                    <td> Closed </td>
+                
+            </tr>
+            
+            <tr>
+                <td>11</td>
+                
+                    <td> <a href="https://jira.englishtown.com/browse/ME-2670">ME-2670</a> </td>
+                
+                    <td> Major </td>
+                
+                    <td> Crash happened when going to the CourseOverview screen </td>
+                
+                    <td> Closed </td>
+                
+            </tr>
+            
+            <tr>
+                <td>12</td>
+                
+                    <td> <a href="https://jira.englishtown.com/browse/ME-2657">ME-2657</a> </td>
+                
+                    <td> Minor </td>
+                
+                    <td> ANR found when unlocking the phone to resume LessonActivity </td>
+                
+                    <td> Open </td>
+                
+            </tr>
+            
+            <tr>
+                <td>13</td>
+                
+                    <td> <a href="https://jira.englishtown.com/browse/ME-2656">ME-2656</a> </td>
+                
+                    <td> Major </td>
+                
+                    <td> Writing templates with reading material as image </td>
+                
+                    <td> Open </td>
+                
+            </tr>
+            
+            <tr>
+                <td>14</td>
+                
+                    <td> <a href="https://jira.englishtown.com/browse/ME-2655">ME-2655</a> </td>
+                
+                    <td> Major </td>
+                
+                    <td> After pause the audio, can't continue to play the audio again </td>
+                
+                    <td> Closed </td>
+                
+            </tr>
+            
+            <tr>
+                <td>15</td>
+                
+                    <td> <a href="https://jira.englishtown.com/browse/ME-2654">ME-2654</a> </td>
+                
+                    <td> Major </td>
+                
+                    <td> Unsupported content by client on writing gap fill free type with image </td>
+                
+                    <td> Open </td>
+                
+            </tr>
+            
+            <tr>
+                <td>16</td>
+                
+                    <td> <a href="https://jira.englishtown.com/browse/ME-2653">ME-2653</a> </td>
+                
+                    <td> Major </td>
+                
+                    <td> Do we need to support video in writing templates? </td>
+                
+                    <td> Closed </td>
+                
+            </tr>
+            
+            <tr>
+                <td>17</td>
+                
+                    <td> <a href="https://jira.englishtown.com/browse/ME-2652">ME-2652</a> </td>
+                
+                    <td> Major </td>
+                
+                    <td> Need to auto-play the audio/video on writing templates? </td>
+                
+                    <td> Closed </td>
+                
+            </tr>
+            
+            <tr>
+                <td>18</td>
+                
+                    <td> <a href="https://jira.englishtown.com/browse/ME-2649">ME-2649</a> </td>
+                
+                    <td> Major </td>
+                
+                    <td> Do we need to follow ui or ux for media files on writing templates? </td>
+                
+                    <td> Open </td>
+                
+            </tr>
+            
+            <tr>
+                <td>19</td>
+                
+                    <td> <a href="https://jira.englishtown.com/browse/ME-2645">ME-2645</a> </td>
+                
+                    <td> Major </td>
+                
+                    <td> Tap 'Retry' in the Module other than 'Final Task' will Cause the Crash. </td>
+                
+                    <td> Closed </td>
+                
+            </tr>
+            
+            <tr>
+                <td>20</td>
+                
+                    <td> <a href="https://jira.englishtown.com/browse/ME-2643">ME-2643</a> </td>
+                
+                    <td> Critical </td>
+                
+                    <td> App will restart when open video activity in HUAWEI </td>
+                
+                    <td> Closed </td>
+                
+            </tr>
+            
+            <tr>
+                <td>21</td>
+                
+                    <td> <a href="https://jira.englishtown.com/browse/ME-2639">ME-2639</a> </td>
+                
+                    <td> Major </td>
+                
+                    <td> On login page, if Demo Course is not selected, there should be no "onlyTSTCourse" is True in the request </td>
+                
+                    <td> Closed </td>
+                
+            </tr>
+            
+            <tr>
+                <td>22</td>
+                
+                    <td> <a href="https://jira.englishtown.com/browse/ME-2637">ME-2637</a> </td>
+                
+                    <td> Major </td>
+                
+                    <td> During role-play, enable storyline and play audio, then disable storyline the role-play can't continue </td>
+                
+                    <td> Closed </td>
+                
+            </tr>
+            
+            <tr>
+                <td>23</td>
+                
+                    <td> <a href="https://jira.englishtown.com/browse/ME-2635">ME-2635</a> </td>
+                
+                    <td> Major </td>
+                
+                    <td> Start from the storyline to role-play, then enable the storyline, audio can't be played </td>
+                
+                    <td> Closed </td>
+                
+            </tr>
+            
+            <tr>
+                <td>24</td>
+                
+                    <td> <a href="https://jira.englishtown.com/browse/ME-2633">ME-2633</a> </td>
+                
+                    <td> Major </td>
+                
+                    <td> Start button on storyline covers the audio, and it is hard for user to play the audio. </td>
+                
+                    <td> Closed </td>
+                
+            </tr>
+            
+            <tr>
+                <td>25</td>
+                
+                    <td> <a href="https://jira.englishtown.com/browse/ME-2632">ME-2632</a> </td>
+                
+                    <td> Minor </td>
+                
+                    <td> Navigation bar disappears caused a blank bar on top of the screen </td>
+                
+                    <td> Closed </td>
+                
+            </tr>
+            
+            <tr>
+                <td>26</td>
+                
+                    <td> <a href="https://jira.englishtown.com/browse/ME-2608">ME-2608</a> </td>
+                
+                    <td> Major </td>
+                
+                    <td> Resuming app from background on ModuleCelebrationActivity crashes the app </td>
+                
+                    <td> Closed </td>
+                
+            </tr>
+            
+            <tr>
+                <td>27</td>
+                
+                    <td> <a href="https://jira.englishtown.com/browse/ME-2605">ME-2605</a> </td>
+                
+                    <td> Major </td>
+                
+                    <td> Using MediaPlayer and TextureView to play video doesn't work well on XIAOMI phone </td>
+                
+                    <td> Closed </td>
+                
+            </tr>
+            
+            <tr>
+                <td>28</td>
+                
+                    <td> <a href="https://jira.englishtown.com/browse/ME-2604">ME-2604</a> </td>
+                
+                    <td> Major </td>
+                
+                    <td> Roleplay ASR native crash </td>
+                
+                    <td> Closed </td>
+                
+            </tr>
+            
+            <tr>
+                <td>29</td>
+                
+                    <td> <a href="https://jira.englishtown.com/browse/ME-2603">ME-2603</a> </td>
+                
+                    <td> Major </td>
+                
+                    <td> Story Line Doesn't Show Correctly after Reset the Module </td>
+                
+                    <td> Closed </td>
+                
+            </tr>
+            
+            <tr>
+                <td>30</td>
+                
+                    <td> <a href="https://jira.englishtown.com/browse/ME-2600">ME-2600</a> </td>
+                
+                    <td> Minor </td>
+                
+                    <td> The drag icon need to be removed in locking blocks in sequencing activity </td>
+                
+                    <td> Closed </td>
+                
+            </tr>
+            
+            <tr>
+                <td>31</td>
+                
+                    <td> <a href="https://jira.englishtown.com/browse/ME-2599">ME-2599</a> </td>
+                
+                    <td> Minor </td>
+                
+                    <td> The "NEXT" button is too close to bottom in Writing Correction </td>
+                
+                    <td> Closed </td>
+                
+            </tr>
+            
+            <tr>
+                <td>32</td>
+                
+                    <td> <a href="https://jira.englishtown.com/browse/ME-2596">ME-2596</a> </td>
+                
+                    <td> Major </td>
+                
+                    <td> Progress sync icon is cut off on android 5 </td>
+                
+                    <td> Closed </td>
+                
+            </tr>
+            
+            <tr>
+                <td>33</td>
+                
+                    <td> <a href="https://jira.englishtown.com/browse/ME-2594">ME-2594</a> </td>
+                
+                    <td> Critical </td>
+                
+                    <td> Audio button will display in story line and cannot be played when the audio path is empty </td>
+                
+                    <td> Open </td>
+                
+            </tr>
+            
+            <tr>
+                <td>34</td>
+                
+                    <td> <a href="https://jira.englishtown.com/browse/ME-2592">ME-2592</a> </td>
+                
+                    <td> Major </td>
+                
+                    <td> Screen background turns black when scrolling a list with video inside </td>
+                
+                    <td> Closed </td>
+                
+            </tr>
+            
+            <tr>
+                <td>35</td>
+                
+                    <td> <a href="https://jira.englishtown.com/browse/ME-2587">ME-2587</a> </td>
+                
+                    <td> Major </td>
+                
+                    <td> The distinct id is random for the same user  </td>
+                
+                    <td> Closed </td>
+                
+            </tr>
+            
+            <tr>
+                <td>36</td>
+                
+                    <td> <a href="https://jira.englishtown.com/browse/ME-2584">ME-2584</a> </td>
+                
+                    <td> Major </td>
+                
+                    <td> After finish a multi-choice video, can't go to module celebration page </td>
+                
+                    <td> Closed </td>
+                
+            </tr>
+            
+            <tr>
+                <td>37</td>
+                
+                    <td> <a href="https://jira.englishtown.com/browse/ME-2580">ME-2580</a> </td>
+                
+                    <td> Major </td>
+                
+                    <td> Skip Button Overlapped the Star Meter </td>
+                
+                    <td> Closed </td>
+                
+            </tr>
+            
+            <tr>
+                <td>38</td>
+                
+                    <td> <a href="https://jira.englishtown.com/browse/ME-2579">ME-2579</a> </td>
+                
+                    <td> Major </td>
+                
+                    <td> The enrolled unit (unlocked unit) doesn't change when tapping sync progress at first time. </td>
+                
+                    <td> Closed </td>
+                
+            </tr>
+            
+            <tr>
+                <td>39</td>
+                
+                    <td> <a href="https://jira.englishtown.com/browse/ME-2578">ME-2578</a> </td>
+                
+                    <td> Blocker </td>
+                
+                    <td> App will crash or restart during quitting any activity </td>
+                
+                    <td> Closed </td>
+                
+            </tr>
+            
+            <tr>
+                <td>40</td>
+                
+                    <td> <a href="https://jira.englishtown.com/browse/ME-2577">ME-2577</a> </td>
+                
+                    <td> Major </td>
+                
+                    <td> Can't finish Final Task on Asus phone </td>
+                
+                    <td> Closed </td>
+                
+            </tr>
+            
+            <tr>
+                <td>41</td>
+                
+                    <td> <a href="https://jira.englishtown.com/browse/ME-2575">ME-2575</a> </td>
+                
+                    <td> Critical </td>
+                
+                    <td> Review what you wrote crash </td>
+                
+                    <td> Closed </td>
+                
+            </tr>
+            
+            <tr>
+                <td>42</td>
+                
+                    <td> <a href="https://jira.englishtown.com/browse/ME-2574">ME-2574</a> </td>
+                
+                    <td> Major </td>
+                
+                    <td> Continue and Replay buttons are missing on Asus phone </td>
+                
+                    <td> Closed </td>
+                
+            </tr>
+            
+            <tr>
+                <td>43</td>
+                
+                    <td> <a href="https://jira.englishtown.com/browse/ME-2571">ME-2571</a> </td>
+                
+                    <td> Major </td>
+                
+                    <td> Question will be truncated in gapfill  </td>
+                
+                    <td> Closed </td>
+                
+            </tr>
+            
+            <tr>
+                <td>44</td>
+                
+                    <td> <a href="https://jira.englishtown.com/browse/ME-2569">ME-2569</a> </td>
+                
+                    <td> Major </td>
+                
+                    <td> Debug tool of passing an activity failed </td>
+                
+                    <td> Closed </td>
+                
+            </tr>
+            
+            <tr>
+                <td>45</td>
+                
+                    <td> <a href="https://jira.englishtown.com/browse/ME-2568">ME-2568</a> </td>
+                
+                    <td> Major </td>
+                
+                    <td> Build failed in Jenkins because of lint of vitamio </td>
+                
+                    <td> Closed </td>
+                
+            </tr>
+            
+            </table>
+    </div>
+
+  <h5>Bug analysis charts</h5>
+    <div id="piechart_priority_share" style="min-width: 310px; height: 400px; max-width: 500px;" align="left"></div>
+
+    <div id="piechart_story_share" style="min-width: 310px; height: 400px; max-width: 600px;" align="left"></div>
+        <div><b>Bugs NOT related to any of stories in sprint:</b> <br />['ME-2677', 'ME-2676', 'ME-2675', 'ME-2673', 'ME-2672', 'ME-2670', 'ME-2657', 'ME-2645', 'ME-2643', 'ME-2639', 'ME-2635', 'ME-2633', 'ME-2632', 'ME-2608', 'ME-2603', 'ME-2600', 'ME-2599', 'ME-2596', 'ME-2594', 'ME-2584', 'ME-2580', 'ME-2579', 'ME-2578', 'ME-2575', 'ME-2571', 'ME-2569', 'ME-2568']</div>
+    <br />
+    <div>
+        <p><b>Sprint Bug Trends</b></p>
+        <br />
+        <div id="bug_trends" style="min-width: 310px; height: 400px; margin: 0 auto"></div>
+    </div>
+
+</div>
+
+<div class="Previous-found-bugs-closed-in-sprint">
+    <h4>Bug found by other sprint but closed in current sprint</h4>
+        <div id="Previous_found_bugs_closed_in_sprint_div">
+            <table class="table">
+            <tr>
+                <th>#</th>
+                <th>Key</th>
+                <th>Priority</th>
+                <th>Summary</th>
+                <th>Status</th>
+             </tr>
+            
+            <tr>
+                <td>0</td>
+                
+                    <td> <a href="https://jira.englishtown.com/browse/ME-2550">ME-2550</a> </td>
+                
+                    <td> Blocker </td>
+                
+                    <td> 500 error response of coursestructure after login with aeva/1  </td>
+                
+                    <td> Closed </td>
+                
+            </tr>
+            
+            <tr>
+                <td>1</td>
+                
+                    <td> <a href="https://jira.englishtown.com/browse/ME-2545">ME-2545</a> </td>
+                
+                    <td> Major </td>
+                
+                    <td> Blocked in downloading a downloaded module after content version changed </td>
+                
+                    <td> Closed </td>
+                
+            </tr>
+            
+            <tr>
+                <td>2</td>
+                
+                    <td> <a href="https://jira.englishtown.com/browse/ME-2511">ME-2511</a> </td>
+                
+                    <td> Blocker </td>
+                
+                    <td> Writing status response for new changed content is not the same as old ones </td>
+                
+                    <td> Closed </td>
+                
+            </tr>
+            
+            <tr>
+                <td>3</td>
+                
+                    <td> <a href="https://jira.englishtown.com/browse/ME-2498">ME-2498</a> </td>
+                
+                    <td> Trivial </td>
+                
+                    <td> Downloading big mp4 files, then timeout, request several times, then get 416 error </td>
+                
+                    <td> Closed </td>
+                
+            </tr>
+            
+            <tr>
+                <td>4</td>
+                
+                    <td> <a href="https://jira.englishtown.com/browse/ME-2485">ME-2485</a> </td>
+                
+                    <td> Minor </td>
+                
+                    <td> Download button appear suddenly in some doing activity during some other resource is downloading </td>
+                
+                    <td> Closed </td>
+                
+            </tr>
+            
+            <tr>
+                <td>5</td>
+                
+                    <td> <a href="https://jira.englishtown.com/browse/ME-2135">ME-2135</a> </td>
+                
+                    <td> Minor </td>
+                
+                    <td> The bottom empty area too large for the drop down selection list in gap fill activity </td>
+                
+                    <td> Closed </td>
+                
+            </tr>
+            
+            </table>
+        </div>
+    <br />
+
+</div>
+
+<div class="Automation-Found-Bug-Panel ">
+    <h4>Bug found by Automation</h4>
+        <div id="automation_bug_div">
+            <table class="table">
+            <tr>
+                <th>#</th>
+                <th>Key</th>
+                <th>Priority</th>
+                <th>Summary</th>
+                <th>Status</th>
+             </tr>
+            
+            </table>
+        </div>
+    <br />
+        <div>The percentage of bug found by automation are ---<b>0.00%</b>---</div>
+
+</div>
+
+<div class = "Live-Defect-Panel">
+    <h4>Live Defect</h4>
+        <div id="live_defect_div">
+            <table class="table">
+            <tr>
+                <th>#</th>
+                <th>Key</th>
+                <th>Priority</th>
+                <th>Summary</th>
+                <th>Status</th>
+             </tr>
+            
+            <tr>
+                <td>0</td>
+                
+                    <td> <a href="https://jira.englishtown.com/browse/ME-2551">ME-2551</a> </td>
+                
+                    <td> Major </td>
+                
+                    <td> Video can't be played on Asus phone </td>
+                
+                    <td> Closed </td>
+                
+            </tr>
+            
+            </table>
+        </div>
+        <br />
+        <div>The percentage of live defect of all the defects are ---<b>2.13%</b>---</div>
+</div>
+
+<div class ="Change-Request-Panel">
+    <h4>Change request</h4>
+        <div id="change_request_div">
+            <table class="table">
+            <tr>
+                <th>#</th>
+                <th>Key</th>
+                <th>Priority</th>
+                <th>Summary</th>
+                <th>Status</th>
+             </tr>
+            
+            </table>
+
+        </div>
+        <br />
+        <div>The percentage of change request of all the tasks are ---<b>0.00%</b>---</div>
+</div>
+</div>
+
+</body>
+</html>
