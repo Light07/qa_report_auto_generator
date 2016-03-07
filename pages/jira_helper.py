@@ -57,13 +57,21 @@ class JiraHelper(object):
             except Exception,e:
                 self.jira = None
 
-    def get_num_of_sprint_names_by_board_id(self, id_of_board, num=config.num_of_sprint_shown):
+    def html_get_num_of_sprint_names_by_board_id(self, id_of_board, num=config.num_of_sprint_shown):
         '''
         return previous [number] of the sprint names that belong to given board id.
         [number] = num_of_sprint_shown + 1
         :param id_of_board:
         :return:
         '''
+        s_name_tuple_list = []
+        s_name_list = self.get_num_of_sprint_names_by_board_id(id_of_board, num)
+        for l in s_name_list:
+            if (l, l) not in s_name_tuple_list:
+                s_name_tuple_list.append((l, l))
+        return s_name_tuple_list
+
+    def get_num_of_sprint_names_by_board_id(self, id_of_board, num=config.num_of_sprint_shown):
         sp_list = []
         sp_name = []
         sp = self.jira.sprints(id_of_board)
@@ -80,7 +88,7 @@ class JiraHelper(object):
 
         for s in sp:
             if s.raw['id'] in target_sprint_list:
-                sp_name.append((str(s.raw['name']), str(s.raw['name'])))
+                sp_name.append(str(s.raw['name']))
 
         return sp_name
 
@@ -306,7 +314,6 @@ class JiraHelper(object):
             j_query_string = j_query_string + ''' and component in ({component})'''.format(component=component_filter)
 
         all_ids = self.get_task_id_by_query_string(j_query_string)
-        print all_ids
         task_status_change_date_list = []
         for id in all_ids:
             data_status = self.get_task_status_change_date(str(id))
@@ -336,14 +343,13 @@ class JiraHelper(object):
         for d in task_status_change_date_list:
             for k, v in d.iteritems():
                 status_dict.setdefault(k, []).append(v)
-
         return_list = []
         date_list = []
         open_bug_list = []
         resolved_bug_list = []
         closed_bug_list = []
 
-        for item in  sorted(status_dict.iteritems(), key=lambda d:d[0]):
+        for item in sorted(status_dict.iteritems(), key=lambda d:d[0]):
             date_list.append(item[0])
             closed_bug_list.append(item[1].count("Closed"))
             resolved_bug_list.append(item[1].count("Resolved"))
@@ -353,6 +359,45 @@ class JiraHelper(object):
         return_list.append(open_bug_list)
         return_list.append(resolved_bug_list)
         return_list.append(closed_bug_list)
+
+        return return_list
+
+    def html_get_total_bug_and_open_bug_trend_by_sprint_and_project(self, project_nested_trends_lists):
+        '''
+
+        :param project_nested_trends_lists:
+        [
+        [['2016-02-01', '2016-02-02', '2016-02-03'], [0, 1 , 1], [0, 0 ,0], [0, 0, 0]], \
+        [['2016-02-01', '2016-02-02', '2016-02-03'], [0, 1 , 1], [1, 2 ,3], [4, 5, 6]]
+        ]
+        :return:
+        '''
+        return_list = []
+        # get the index of min length of the bug trends lists
+        date_index_dict = {}
+        for l in project_nested_trends_lists:
+            date_index_dict[project_nested_trends_lists.index(l)] = len(l[0])
+        min_date_index = min(date_index_dict, key=date_index_dict.get)
+
+        temp_open_number_list = []
+        temp_resolved_number_list = []
+        temp_closed_number_list = []
+        for i in range(date_index_dict[min_date_index]):
+            temp_open_number = 0
+            temp_resolved_number = 0
+            temp_closed_number = 0
+            for l in project_nested_trends_lists:
+                temp_open_number += l[1][i]
+                temp_resolved_number += l[2][i]
+                temp_closed_number += l[3][i]
+            temp_open_number_list.append(temp_open_number)
+            temp_resolved_number_list.append(temp_resolved_number)
+            temp_closed_number_list.append(temp_closed_number)
+
+        return_list.append(project_nested_trends_lists[min_date_index][0])
+        return_list.append(temp_open_number_list)
+        return_list.append(temp_resolved_number_list)
+        return_list.append(temp_closed_number_list)
 
         return return_list
 
@@ -586,7 +631,7 @@ class JiraHelper(object):
             bug_info.append(dict["Status"])
             bug_list_for_html.append(bug_info)
 
-        str_nested_list = self.remove_duplicated_value(bug_list_for_html)
+        str_nested_list = self.remove_list_duplicated_value(bug_list_for_html)
 
         return str_nested_list
 
@@ -598,12 +643,20 @@ class JiraHelper(object):
         '''
         return self.html_get_bug_list_by_tasks(task_list_has_linked_issue)
 
-    def remove_duplicated_value(self, list):
+    def remove_list_duplicated_value(self, list):
         new_list = []
         for l in list:
             if l not in new_list:
                 new_list.append(l)
         return new_list
+
+    def remove_nested_list_duplicated_value(self, list):
+        return_list = []
+        for l in list:
+            for item in l:
+                if item not in return_list:
+                    return_list.append(item)
+        return return_list
 
     def html_get_share_ratio_by_priority(self, issue_list, category="Priority"):
         '''
@@ -814,5 +867,24 @@ class JiraHelper(object):
                 status = "Fail"
         return status
 
-# if __name__ == "__main__":
-#     jira = JiraHelper(config.jira_options, config.jira_account)
+    def html_get_mulitple_sprint_status(self, status_list):
+        status_len = len(status_list)
+        for s in status_list:
+            if status_list.count(s) == status_len:
+                return s
+            elif "Fail" in status_list:
+                return "Fail"
+            else:
+                return "In Progress"
+
+if __name__ == "__main__":
+    jira = JiraHelper(config.jira_options, config.jira_account)
+    # a = []
+    # b = jira.html_get_total_bug_and_open_bug_trend_by_sprint(1924, 42, "SD")
+    # c = jira.html_get_total_bug_and_open_bug_trend_by_sprint(1924, 128, "SPC")
+    # print b
+    # print c
+    # a.append(b)
+    # a.append(c)
+    # print jira.remove_nested_list_duplicated_value(a)
+    print jira.html_get_total_bug_and_open_bug_trend_by_sprint_and_project([0])

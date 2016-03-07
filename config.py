@@ -1,4 +1,5 @@
 __author__ = 'kevin.cai'
+
 import os
 
 jira_options = {'server':"https://jira.englishtown.com"}
@@ -10,10 +11,15 @@ project_name = None
 
 board_id = None
 
-
 # For engage team, customized usage
 p_name = "ME"
 b_id = "416"
+
+# For School team, customized usage
+s_name = "SPC, SD"
+s_dict = {"SPC":128 , "SD":42}
+school_project_choice = [('SPC', 'SPC'), ('SD', 'SD')]
+
 # Components filter.
 quick_filter_choice = [('iOS', 'iOS'), ('Android', 'Android'), ('Show All', "Show All")]
 

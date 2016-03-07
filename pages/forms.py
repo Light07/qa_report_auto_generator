@@ -7,7 +7,6 @@ from wtforms.validators import Optional
 
 import config
 
-
 class EFForm(Form):
 
     qa_resource = StringField(u'QA Resource', [validators.DataRequired("Please input the qa who contributed on this sprint.")])
@@ -37,5 +36,10 @@ class EngageCustomizedForm(Form):
     # quick_filter = SelectMultipleField(u'Quick Filter',coerce=str, choices=config.quick_filter_choice)
     quick_filter = SelectField(u'Quick Filter',coerce=str, choices=config.quick_filter_choice)
     submit = SubmitField(u'Submit')
- # validators=[Optional()],
 
+class SchoolCustomizedForm(Form):
+    qa_resource = HiddenField(StringField(u'QA Resource'), [validators.DataRequired("Please input the qa who contributed on this sprint.")])
+    username = HiddenField(StringField(u'Jira Username'), [validators.DataRequired("Please input the user name that used for jira login.")])
+    password = HiddenField(PasswordField(u'Jira Password'), [validators.DataRequired("Please input the password.")])
+    project_name = SelectMultipleField(u'Select Project',coerce=str, choices=config.school_project_choice)
+    submit = SubmitField(u'Submit')
