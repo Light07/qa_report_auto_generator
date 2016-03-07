@@ -26,8 +26,9 @@ def index():
             jira_account['username'] = session['username']
             jira_account['password'] = session['password']
 
-            if request.form.get('project_name').upper() in config.s_name:
-                return redirect(url_for('school_customized_index'))
+            for item in request.form.get('project_name'):
+                if item.upper().strip() in config.s_name:
+                    return redirect(url_for('school_customized_index'))
 
             # Return 10 sprint based on given board id
             jira = JiraHelper(config.jira_options, jira_account)
