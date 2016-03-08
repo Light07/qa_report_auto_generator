@@ -909,6 +909,3 @@ class JiraHelper(object):
 
 if __name__ == "__main__":
     jira = JiraHelper(config.jira_options, config.jira_account)
-    s = jira.get_standard_tasks_info_by_sprint('1924', 'SD')
-    print jira.get_failed_tasks_by_sprint(1924, 42, s)
-    print jira.get_task_info_by_query_string('''project = "School Dragon" AND issuetype in (standardIssueTypes()) and sprint= 1924 and status!=Closed''')
