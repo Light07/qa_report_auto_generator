@@ -36,7 +36,7 @@ def index():
             sprint_choice.append(('-1', 'Please select a sprint'))
             session['sprint_name'] = sprint_choice
 
-            if request.form.get('project_name') in config.p_name and request.form.get('board_id') in config.b_id:
+            if (request.form.get('project_name')).upper() in config.p_name and request.form.get('board_id') in config.b_id:
                 return redirect(url_for('engage_customized_index'))
 
             return redirect(url_for('get_sprint_list'))
@@ -232,11 +232,15 @@ def get_report():
         #
         bug_trends = jira.html_get_total_bug_and_open_bug_trend_by_sprint(sprint_id, board_id, project_name)
 
-    actual_points = jira.get_actual_story_points_by_sprint(standard_tasks_info_by_sprint)
+    actual_points = jira.get_actual_story_points_by_sprint(sprint_id, board_id, standard_tasks_info_by_sprint)
 
-    unplanned_story_points = jira.html_get_umplanned_story_porints_by_sprint(unplanned_tasks_info)
+    unplanned_story_points = jira.html_get_unplanned_story_porints_by_sprint(unplanned_tasks_info)
 
     unplanned_nest_lists = jira.html_get_unplanned_tasks_by_sprint(unplanned_tasks_info)
+
+    failed_nest_lists = jira.html_get_failed_tasks_by_sprint(sprint_id, board_id, standard_tasks_info_by_sprint)
+
+    failed_story_points = jira.html_get_failed_story_porints_by_sprint(sprint_id, board_id, standard_tasks_info_by_sprint)
 
     sprint_bug_nested_list = jira.html_get_bug_list_by_tasks(raw_bug_list)
 
@@ -268,6 +272,8 @@ def get_report():
                             qa_resource = qa,\
                             sprint_status=sprint_status, actual_story_points=actual_points, \
                             unplanned_story_points=unplanned_story_points, unplanned_nest_lists=unplanned_nest_lists, \
+                            failed_nest_lists=failed_nest_lists, \
+                            failed_story_points = failed_story_points,\
                             sprint_bug_nested_lists=sprint_bug_nested_list,\
                             bug_priority_nested_lists=bug_priority_list, \
                             bug_priority_share_detail_info=bug_priority_detail,\
@@ -375,11 +381,15 @@ def get_school_report():
     bug_trends = jira.html_get_total_bug_and_open_bug_trend_by_sprint_and_project(bug_trends)
 
     # generate report
-    actual_points = jira.get_actual_story_points_by_sprint(standard_tasks_info_by_sprint)
+    actual_points = jira.get_actual_story_points_by_sprint(sprint_id, board_id, standard_tasks_info_by_sprint)
 
-    unplanned_story_points = jira.html_get_umplanned_story_porints_by_sprint(unplanned_tasks_info)
+    unplanned_story_points = jira.html_get_unplanned_story_porints_by_sprint(unplanned_tasks_info)
 
     unplanned_nest_lists = jira.html_get_unplanned_tasks_by_sprint(unplanned_tasks_info)
+
+    failed_nest_lists = jira.html_get_failed_tasks_by_sprint(sprint_id, board_id, standard_tasks_info_by_sprint)
+
+    failed_story_points = jira.html_get_failed_story_porints_by_sprint(sprint_id, board_id, standard_tasks_info_by_sprint)
 
     sprint_bug_nested_list = jira.html_get_bug_list_by_tasks(raw_bug_list)
 
@@ -409,6 +419,8 @@ def get_school_report():
                             qa_resource = qa,\
                             sprint_status=sprint_status, actual_story_points=actual_points, \
                             unplanned_story_points=unplanned_story_points, unplanned_nest_lists=unplanned_nest_lists, \
+                            failed_nest_lists=failed_nest_lists, \
+                            failed_story_points = failed_story_points,\
                             sprint_bug_nested_lists=sprint_bug_nested_list,\
                             bug_priority_nested_lists=bug_priority_list, \
                             bug_priority_share_detail_info=bug_priority_detail,\

@@ -143,42 +143,60 @@ class JiraHelper(object):
         '''
         return self.jira.sprint_info(id_of_board, sprint_id)
 
-    def get_actual_story_points_by_sprint(self, standard_tasks_info_by_sprint):
+    def get_actual_story_points_by_sprint(self, sprint_id, id_of_board, standard_tasks_info_by_sprint):
+        sprint_info = self.get_sprint_info(sprint_id, id_of_board)
+        end_time = DateTime(str(sprint_info["completeDate"]) + ' ' +  "US/Eastern")
         story_point = 0
         for i in standard_tasks_info_by_sprint:
-            if i["Story_point"]:
-                story_point += int(i["Story_point"])
+            if i["Status"] == "Closed":
+                    if i["Story_point"]:
+                        closed_date = DateTime(self.get_issue_closed_date_by_id(i["Key"]))
+                        if closed_date <= end_time:
+                            story_point += int(i["Story_point"])
+
         return story_point
+
+    def get_failed_tasks_by_sprint(self, sprint_id, id_of_board, standard_tasks_info_by_sprint):
+        sprint_info = self.get_sprint_info(sprint_id, id_of_board)
+        end_time = DateTime(str(sprint_info["completeDate"]) + ' ' +  "US/Eastern")
+
+        return_list = []
+        for i in standard_tasks_info_by_sprint:
+            if str(i["Status"]) != "Closed":
+                return_list.append(i)
+            else:
+                closed_date = DateTime(self.get_issue_closed_date_by_id(i["Key"]))
+                if closed_date > end_time:
+                    return_list.append(i)
+        return return_list
 
     def get_issue_closed_date_by_id(self, id):
         issue = self.jira.issue(id, expand='changelog')
-        change_log = issue.changelog
-        closed_date = None
-        for history in change_log.histories:
-            for item in history.items:
-                if item.field == 'status':
-                    if item.toString == 'Closed':
-                        closed_date = history.created
-
-        if issue.fields.status == 'Closed':
-            return closed_date
-        else:
+        if str(issue.fields.status) != 'Closed':
             return None
+        else:
+            change_log = issue.changelog
+            closed_date = None
+            for history in change_log.histories:
+                for item in history.items:
+                    if item.field == 'status':
+                        if item.toString == 'Closed':
+                            closed_date = history.created
+        return closed_date
 
     def get_issue_resoved_date_by_id(self, id):
         issue = self.jira.issue(id, expand='changelog')
-        change_log = issue.changelog
-        resolved_date = None
-        for history in change_log.histories:
-            for item in history.items:
-                if item.field == 'status':
-                    if item.toString == 'Resolved':
-                        resolved_date = history.created
-
-        if issue.fields.status == 'Closed':
-            return resolved_date
-        else:
+        if str(issue.fields.status) not in ('Resolved', 'Closed'):
             return None
+        else:
+            change_log = issue.changelog
+            resolved_date = None
+            for history in change_log.histories:
+                for item in history.items:
+                    if item.field == 'status':
+                        if item.toString == 'Resolved':
+                            resolved_date = history.created
+        return resolved_date
 
     def get_task_status_change_date(self, id):
         '''
@@ -260,7 +278,19 @@ class JiraHelper(object):
     def html_get_unplanned_tasks_by_sprint(self, unplanned_task_lists):
         return self.html_get_bug_list_by_tasks(unplanned_task_lists)
 
-    def html_get_umplanned_story_porints_by_sprint(self, unplanned_task_lists):
+    def html_get_failed_tasks_by_sprint(self, sprint_id, id_of_board, standard_task_info_lists):
+        failed_tasks_lists = self.get_failed_tasks_by_sprint(sprint_id, id_of_board, standard_task_info_lists)
+        return self.html_get_bug_list_by_tasks(failed_tasks_lists)
+
+    def html_get_failed_story_porints_by_sprint(self, sprint_id, id_of_board, standard_task_info_lists):
+        failed_tasks_lists = self.get_failed_tasks_by_sprint(sprint_id, id_of_board, standard_task_info_lists)
+        s_points = 0
+        for item in failed_tasks_lists:
+            if item["Story_point"]:
+                s_points += int(item["Story_point"])
+        return s_points
+
+    def html_get_unplanned_story_porints_by_sprint(self, unplanned_task_lists):
         s_points = 0
         for item in unplanned_task_lists:
             if item["Story_point"]:
@@ -879,12 +909,6 @@ class JiraHelper(object):
 
 if __name__ == "__main__":
     jira = JiraHelper(config.jira_options, config.jira_account)
-    # a = []
-    # b = jira.html_get_total_bug_and_open_bug_trend_by_sprint(1924, 42, "SD")
-    # c = jira.html_get_total_bug_and_open_bug_trend_by_sprint(1924, 128, "SPC")
-    # print b
-    # print c
-    # a.append(b)
-    # a.append(c)
-    # print jira.remove_nested_list_duplicated_value(a)
-    print jira.html_get_total_bug_and_open_bug_trend_by_sprint_and_project([0])
+    s = jira.get_standard_tasks_info_by_sprint('1924', 'SD')
+    print jira.get_failed_tasks_by_sprint(1924, 42, s)
+    print jira.get_task_info_by_query_string('''project = "School Dragon" AND issuetype in (standardIssueTypes()) and sprint= 1924 and status!=Closed''')

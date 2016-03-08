@@ -241,9 +241,9 @@
 <div class="Sprint-status">
     {% if project_required == "ME" %}
     <h4>Sprint Status</h4>
-        <div>Actual story points in current sprint: <b>{{actual_story_points|safe}}</b>.</div>
+        <div>Actual completed story points in current sprint: <b>{{actual_story_points|safe}}</b>.</div>
     {% else %}
-        <div>Sprint Status: <b class = "{{sprint_status|safe}}">"{{sprint_status|safe}}"</b>, actual sprint story points completed: <b>{{actual_story_points|safe}}</b>.</div>
+        <div>Sprint Status: <b class = "{{sprint_status|safe}}">"{{sprint_status|safe}}"</b>, actual completed sprint story points completed: <b>{{actual_story_points|safe}}</b>.</div>
     {% endif %}
 </div>
 
@@ -271,6 +271,33 @@
     </div>
 
 </div>
+
+{% if sprint_status != "Success" %}
+<div class="failed-tasks">
+    <h4>Failed Tasks</h4>
+        <div>Total failed story points: <b>{{failed_story_points|safe}}</b> .</div>
+        <div id="failed_stories_div">
+         <table class="table sortable">
+            <tr>
+                <th>#</th>
+                <th>Key</th>
+                <th>Priority</th>
+                <th>Summary</th>
+                <th>Status</th>
+             </tr>
+            {% for item in range(failed_nest_lists|length) %}
+            <tr>
+                <td>{{item}}</td>
+                {% for l in failed_nest_lists[item] %}
+                    <td> {{l|safe}} </td>
+                {% endfor %}
+            </tr>
+            {% endfor %}
+            </table>
+    </div>
+
+</div>
+{% endif %}
 
 <div class="bugs-in-current-sprint">
   <h4>Bugs found in current sprint</h4>
