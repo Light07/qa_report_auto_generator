@@ -26,7 +26,9 @@ def index():
             jira_account['username'] = session['username']
             jira_account['password'] = session['password']
 
-            for item in request.form.get('project_name'):
+            project_list = []
+            project_list.append(request.form.get('project_name'))
+            for item in project_list:
                 if item.upper().strip() in config.s_name:
                     return redirect(url_for('school_customized_index'))
 
