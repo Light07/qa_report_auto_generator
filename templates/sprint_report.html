@@ -72,6 +72,14 @@
     .table .table {
     background-color: #fff;
     }
+    .btn-toggle-table {
+        text-align: right;
+        text-decoration: underline;
+        margin-top: -1em;
+        padding-bottom: 10px;
+        cursor:pointer;
+        user-select:none;
+    }
 
     </style>
     <script type="text/javascript" src="http://code.jquery.com/jquery-1.9.1.js"></script>
@@ -80,6 +88,11 @@
     <script src="https://code.highcharts.com/modules/exporting.js"></script>
     <script type="text/javascript">
 
+    $(function(){
+        $(".btn-toggle-table").click(function(){
+            $(this).next().find('tbody').toggle();
+         });
+    });
     //PieChart Bug priority share definition.
     $(function () {
         $('#piechart_priority_share').highcharts({
@@ -243,58 +256,59 @@
     <h4>Sprint Status</h4>
         <div>Actual completed story points in current sprint: <b>{{actual_story_points|safe}}</b>.</div>
     {% else %}
-        <div>Sprint Status: <b class = "{{sprint_status|safe}}">"{{sprint_status|safe}}"</b>, actual completed sprint story points completed: <b>{{actual_story_points|safe}}</b>.</div>
+        <div>Sprint Status: <b class = "{{sprint_status|safe}}">"{{sprint_status|safe}}"</b>, actual completed sprint story points during sprint period: <b>{{actual_story_points|safe}}</b>.</div>
     {% endif %}
 </div>
 
 <div class="Unplanned-tasks">
-    <h4>Unplanned Tasks</h4>
+    <h4>Tasks added in current sprint after sprint began</h4>
         <div>Total unplanned story points: <b>{{unplanned_story_points|safe}}</b> .</div>
         <div id="unplanned_stories_div">
-         <table class="table sortable">
-            <tr>
-                <th>#</th>
-                <th>Key</th>
-                <th>Priority</th>
-                <th>Summary</th>
-                <th>Status</th>
-             </tr>
-            {% for item in range(unplanned_nest_lists|length) %}
-            <tr>
-                <td>{{item}}</td>
-                {% for l in unplanned_nest_lists[item] %}
-                    <td> {{l|safe}} </td>
+            <div class="btn-toggle-table">Expand/Collapse</div>
+            <table class="table sortable">
+                <tr>
+                    <th width="30">#</th>
+                    <th width="100">Key</th>
+                    <th width="100">Priority</th>
+                    <th>Summary</th>
+                    <th width="100">Status</th>
+                 </tr>
+                {% for item in range(unplanned_nest_lists|length) %}
+                <tr>
+                    <td>{{item}}</td>
+                    {% for l in unplanned_nest_lists[item] %}
+                        <td> {{l|safe}} </td>
+                    {% endfor %}
+                </tr>
                 {% endfor %}
-            </tr>
-            {% endfor %}
-            </table>
-    </div>
-
+                </table>
+        </div>
 </div>
 
 {% if sprint_status != "Success" %}
 <div class="failed-tasks">
-    <h4>Failed Tasks</h4>
-        <div>Total failed story points: <b>{{failed_story_points|safe}}</b> .</div>
+    <h4>Un-Completed Tasks</h4>
+        <div>Total un-completed story points: <b>{{un_completed_story_points|safe}}</b> . Percentage of un-completed tasks in sprint: <b>{{failed_tasks_percentage|safe}}</b></div>
         <div id="failed_stories_div">
-         <table class="table sortable">
-            <tr>
-                <th>#</th>
-                <th>Key</th>
-                <th>Priority</th>
-                <th>Summary</th>
-                <th>Status</th>
-             </tr>
-            {% for item in range(failed_nest_lists|length) %}
-            <tr>
-                <td>{{item}}</td>
-                {% for l in failed_nest_lists[item] %}
-                    <td> {{l|safe}} </td>
+            <div class="btn-toggle-table">Expand/Collapse</div>
+             <table class="table sortable">
+                <tr>
+                    <th width="30">#</th>
+                    <th width="100">Key</th>
+                    <th width="100">Priority</th>
+                    <th>Summary</th>
+                    <th width="100">Status</th>
+                 </tr>
+                {% for item in range(un_completed_tasks_nest_lists|length) %}
+                <tr>
+                    <td>{{item}}</td>
+                    {% for l in un_completed_tasks_nest_lists[item] %}
+                        <td> {{l|safe}} </td>
+                    {% endfor %}
+                </tr>
                 {% endfor %}
-            </tr>
-            {% endfor %}
-            </table>
-    </div>
+                </table>
+        </div>
 
 </div>
 {% endif %}
@@ -302,13 +316,14 @@
 <div class="bugs-in-current-sprint">
   <h4>Bugs found in current sprint</h4>
     <div id="bug_list_div">
+        <div class="btn-toggle-table">Expand/Collapse</div>
          <table class="table sortable">
             <tr>
-                <th>#</th>
-                <th>Key</th>
-                <th>Priority</th>
+                <th width="30">#</th>
+                <th width="100">Key</th>
+                <th width="100">Priority</th>
                 <th>Summary</th>
-                <th>Status</th>
+                <th width="100">Status</th>
              </tr>
             {% for item in range(sprint_bug_nested_lists|length) %}
             <tr>
@@ -326,13 +341,14 @@
 
     <div id="piechart_story_share" style="min-width: 310px; height: 400px; max-width: 600px;" align="left"></div>
         <h4>Bugs not related to any stories in sprint</h4>
+        <div class="btn-toggle-table">Expand/Collapse</div>
         <table class="table sortable">
             <tr>
-                <th>#</th>
-                <th>Key</th>
-                <th>Priority</th>
+                <th width="30">#</th>
+                <th width="100">Key</th>
+                <th width="100">Priority</th>
                 <th>Summary</th>
-                <th>Status</th>
+                <th width="100">Status</th>
              </tr>
             {% for item in range(story_share_detail_info|length) %}
             <tr>
@@ -343,8 +359,6 @@
             </tr>
             {% endfor %}
         </table>
-        <!--<div><b>Bugs not related to any stories in sprint:</b> <br />{{story_share_detail_info|safe}}</div>-->
-
     <br />
     <div>
         <p><b>Sprint Bug Trends</b></p>
@@ -357,13 +371,14 @@
 <div class="Previous-found-bugs-closed-in-sprint">
     <h4>Bugs found in other sprint but closed in current sprint</h4>
         <div id="Previous_found_bugs_closed_in_sprint_div">
+            <div class="btn-toggle-table">Expand/Collapse</div>
             <table class="table sortable">
             <tr>
-                <th>#</th>
-                <th>Key</th>
-                <th>Priority</th>
+                <th width="30">#</th>
+                <th width="100">Key</th>
+                <th width="100">Priority</th>
                 <th>Summary</th>
-                <th>Status</th>
+                <th width="100">Status</th>
              </tr>
             {% for item in range(previous_bugs_closed_in_sprint|length) %}
             <tr>
@@ -382,13 +397,14 @@
 <div class="Automation-Found-Bug-Panel ">
     <h4>Bugs found by automation</h4>
         <div id="automation_bug_div">
+            <div class="btn-toggle-table">Expand/Collapse</div>
             <table class="table sortable">
             <tr>
-                <th>#</th>
-                <th>Key</th>
-                <th>Priority</th>
+                <th width="30">#</th>
+                <th width="100">Key</th>
+                <th width="100">Priority</th>
                 <th>Summary</th>
-                <th>Status</th>
+                <th width="100">Status</th>
              </tr>
             {% for item in range(sprint_automation_found_bug_nested_lists|length) %}
             <tr>
@@ -408,13 +424,14 @@
 <div class = "Live-Defect-Panel">
     <h4>Live Defects</h4>
         <div id="live_defect_div">
+            <div class="btn-toggle-table">Expand/Collapse</div>
             <table class="table sortable">
             <tr>
-                <th>#</th>
-                <th>Key</th>
-                <th>Priority</th>
+                <th width="30">#</th>
+                <th width="100">Key</th>
+                <th width="100">Priority</th>
                 <th>Summary</th>
-                <th>Status</th>
+                <th width="100">Status</th>
              </tr>
             {% for item in range(sprint_live_defect_nested_lists|length) %}
             <tr>
@@ -433,13 +450,14 @@
 <div class ="Change-Request-Panel">
     <h4>Change Requests</h4>
         <div id="change_request_div">
+            <div class="btn-toggle-table">Expand/Collapse</div>
             <table class="table sortable">
             <tr>
-                <th>#</th>
-                <th>Key</th>
-                <th>Priority</th>
+                <th width="30">#</th>
+                <th width="100">Key</th>
+                <th width="100">Priority</th>
                 <th>Summary</th>
-                <th>Status</th>
+                <th width="100">Status</th>
              </tr>
             {% for item in range(sprint_change_request_nested_lists|length) %}
             <tr>

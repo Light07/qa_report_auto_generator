@@ -240,16 +240,18 @@ def get_report():
 
     unplanned_nest_lists = jira.html_get_unplanned_tasks_by_sprint(unplanned_tasks_info)
 
-    failed_nest_lists = jira.html_get_failed_tasks_by_sprint(sprint_id, board_id, standard_tasks_info_by_sprint)
+    un_completed_tasks_nest_lists = jira.html_get_un_completed_tasks_by_sprint(sprint_id, board_id, standard_tasks_info_by_sprint)
 
-    failed_story_points = jira.html_get_failed_story_porints_by_sprint(sprint_id, board_id, standard_tasks_info_by_sprint)
+    un_completed_story_points = jira.html_get_un_completed_story_porints_by_sprint(sprint_id, board_id, standard_tasks_info_by_sprint)
+
+    un_completed_tasks_percentage = jira.html_get_un_completed_tasks_percentage(sprint_id, board_id, standard_tasks_info_by_sprint)
 
     sprint_bug_nested_list = jira.html_get_bug_list_by_tasks(raw_bug_list)
 
     previous_bugs_closed_in_sprint = jira.html_get_bug_list_by_tasks(bugs_opened_before_but_closed_in_sprint)
 
     sprint_automation_bug_list = jira.html_get_bug_list_by_tasks(raw_automation_bug_list)
-    sprint_automation_bug_percentage = jira.html_get_automation_found_bug_percentange(raw_bug_id_list, raw_automation_bug_list)
+    sprint_automation_bug_percentage = jira.html_get_automation_found_bug_percentage(raw_bug_id_list, raw_automation_bug_list)
 
     sprint_live_defect_nested_list = jira.html_get_bug_list_by_tasks(raw_live_defect_list)
     sprint_live_defect_percentage = jira.html_get_live_defect_percentage_of_all_defects(raw_live_defect_id_list, raw_bug_id_list )
@@ -269,27 +271,29 @@ def get_report():
     story_share_detail = jira.html_get_bug_list_by_tasks(story_share_detail)
 
     render = render_template('sprint_report.html', project_required=project_name, \
-                            customized_component=session["quick_filter"] if "quick_filter" in session else None, \
-                            sprint_name_string=sprint_name,\
-                            qa_resource = qa,\
-                            sprint_status=sprint_status, actual_story_points=actual_points, \
-                            unplanned_story_points=unplanned_story_points, unplanned_nest_lists=unplanned_nest_lists, \
-                            failed_nest_lists=failed_nest_lists, \
-                            failed_story_points = failed_story_points,\
-                            sprint_bug_nested_lists=sprint_bug_nested_list,\
-                            bug_priority_nested_lists=bug_priority_list, \
-                            bug_priority_share_detail_info=bug_priority_detail,\
-                            story_share_nested_lists=story_share, \
-                            story_share_detail_info=story_share_detail,\
-                            total_bug_and_opened_bug_pair_nested_list=bug_trends,\
-                            sprint_automation_found_bug_nested_lists=sprint_automation_bug_list, \
-                            sprint_automation_bug_percentage=sprint_automation_bug_percentage,\
-                            previous_bugs_closed_in_sprint = previous_bugs_closed_in_sprint,
-                            sprint_live_defect_nested_lists=sprint_live_defect_nested_list,\
-                            sprint_live_defect_percentage=sprint_live_defect_percentage,\
-                            sprint_change_request_nested_lists=sprint_change_request_nested_list, \
-                            sprint_change_request_percentage=sprint_change_request_percentage
-                            )
+                             customized_component=session["quick_filter"] if "quick_filter" in session else None, \
+                             sprint_name_string=sprint_name, \
+                             qa_resource = qa, \
+                             sprint_status=sprint_status, actual_story_points=actual_points, \
+                             unplanned_story_points=unplanned_story_points, unplanned_nest_lists=unplanned_nest_lists, \
+                             un_finished_tasks_nest_lists=un_completed_tasks_nest_lists, \
+                             un_completed_story_points = un_completed_story_points, \
+                             un_completed_tasks_percentage=un_completed_tasks_percentage, \
+                             un_completed_tasks_nest_lists=un_completed_tasks_nest_lists, \
+                             sprint_bug_nested_lists=sprint_bug_nested_list, \
+                             bug_priority_nested_lists=bug_priority_list, \
+                             bug_priority_share_detail_info=bug_priority_detail, \
+                             story_share_nested_lists=story_share, \
+                             story_share_detail_info=story_share_detail, \
+                             total_bug_and_opened_bug_pair_nested_list=bug_trends, \
+                             sprint_automation_found_bug_nested_lists=sprint_automation_bug_list, \
+                             sprint_automation_bug_percentage=sprint_automation_bug_percentage, \
+                             previous_bugs_closed_in_sprint = previous_bugs_closed_in_sprint,
+                             sprint_live_defect_nested_lists=sprint_live_defect_nested_list, \
+                             sprint_live_defect_percentage=sprint_live_defect_percentage, \
+                             sprint_change_request_nested_lists=sprint_change_request_nested_list, \
+                             sprint_change_request_percentage=sprint_change_request_percentage
+                             )
     global response
     response = make_response(render)
     session.clear()
@@ -389,16 +393,18 @@ def get_school_report():
 
     unplanned_nest_lists = jira.html_get_unplanned_tasks_by_sprint(unplanned_tasks_info)
 
-    failed_nest_lists = jira.html_get_failed_tasks_by_sprint(sprint_id, board_id, standard_tasks_info_by_sprint)
+    un_completed_tasks_nest_lists = jira.html_get_un_completed_tasks_by_sprint(sprint_id, board_id, standard_tasks_info_by_sprint)
 
-    failed_story_points = jira.html_get_failed_story_porints_by_sprint(sprint_id, board_id, standard_tasks_info_by_sprint)
+    un_completed_story_points = jira.html_get_un_completed_story_porints_by_sprint(sprint_id, board_id, standard_tasks_info_by_sprint)
+
+    un_completed_tasks_percentage = jira.html_get_un_completed_tasks_percentage(sprint_id, board_id, standard_tasks_info_by_sprint)
 
     sprint_bug_nested_list = jira.html_get_bug_list_by_tasks(raw_bug_list)
 
     previous_bugs_closed_in_sprint = jira.html_get_bug_list_by_tasks(bugs_opened_before_but_closed_in_sprint)
 
     sprint_automation_bug_list = jira.html_get_bug_list_by_tasks(raw_automation_bug_list)
-    sprint_automation_bug_percentage = jira.html_get_automation_found_bug_percentange(raw_bug_id_list, raw_automation_bug_list)
+    sprint_automation_bug_percentage = jira.html_get_automation_found_bug_percentage(raw_bug_id_list, raw_automation_bug_list)
 
     sprint_live_defect_nested_list = jira.html_get_bug_list_by_tasks(raw_live_defect_list)
     sprint_live_defect_percentage = jira.html_get_live_defect_percentage_of_all_defects(raw_live_defect_id_list, raw_bug_id_list )
@@ -421,8 +427,9 @@ def get_school_report():
                             qa_resource = qa,\
                             sprint_status=sprint_status, actual_story_points=actual_points, \
                             unplanned_story_points=unplanned_story_points, unplanned_nest_lists=unplanned_nest_lists, \
-                            failed_nest_lists=failed_nest_lists, \
-                            failed_story_points = failed_story_points,\
+                            un_completed_tasks_nest_lists=un_completed_tasks_nest_lists, \
+                            un_completed_story_points=un_completed_story_points,\
+                            un_completed_tasks_percentage =un_completed_tasks_percentage, \
                             sprint_bug_nested_lists=sprint_bug_nested_list,\
                             bug_priority_nested_lists=bug_priority_list, \
                             bug_priority_share_detail_info=bug_priority_detail,\

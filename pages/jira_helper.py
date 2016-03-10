@@ -144,30 +144,37 @@ class JiraHelper(object):
         return self.jira.sprint_info(id_of_board, sprint_id)
 
     def get_actual_story_points_by_sprint(self, sprint_id, id_of_board, standard_tasks_info_by_sprint):
-        sprint_info = self.get_sprint_info(sprint_id, id_of_board)
-        end_time = DateTime(str(sprint_info["completeDate"]) + ' ' +  "US/Eastern")
         story_point = 0
-        for i in standard_tasks_info_by_sprint:
-            if i["Status"] == "Closed":
-                    if i["Story_point"]:
-                        closed_date = DateTime(self.get_issue_closed_date_by_id(i["Key"]))
-                        if closed_date <= end_time:
-                            story_point += int(i["Story_point"])
+        sprint_info = self.get_sprint_info(sprint_id, id_of_board)
+        if sprint_info["completeDate"] != "None":
+            end_time = DateTime(str(sprint_info["completeDate"]) + ' ' +  "US/Eastern")
+            for i in standard_tasks_info_by_sprint:
+                if i["Status"] == "Closed":
+                        if i["Story_point"]:
+                            closed_date = DateTime(self.get_issue_closed_date_by_id(i["Key"]))
+                            if closed_date <= end_time:
+                                story_point += int(i["Story_point"])
+                            else:
+                                print i["Key"]
+        else:
+             for i in standard_tasks_info_by_sprint:
+                 if i["Status"] == "Closed" and i["Story_point"]:
+                      story_point += int(i["Story_point"])
 
         return story_point
 
-    def get_failed_tasks_by_sprint(self, sprint_id, id_of_board, standard_tasks_info_by_sprint):
-        sprint_info = self.get_sprint_info(sprint_id, id_of_board)
-        end_time = DateTime(str(sprint_info["completeDate"]) + ' ' +  "US/Eastern")
-
+    def get_un_completed_tasks_by_sprint(self, sprint_id, id_of_board, standard_tasks_info_by_sprint):
         return_list = []
+        sprint_info = self.get_sprint_info(sprint_id, id_of_board)
         for i in standard_tasks_info_by_sprint:
             if str(i["Status"]) != "Closed":
                 return_list.append(i)
             else:
-                closed_date = DateTime(self.get_issue_closed_date_by_id(i["Key"]))
-                if closed_date > end_time:
-                    return_list.append(i)
+                if sprint_info["completeDate"] != "None":
+                    end_time = DateTime(str(sprint_info["completeDate"]) + ' ' +  "US/Eastern")
+                    closed_date = DateTime(self.get_issue_closed_date_by_id(i["Key"]))
+                    if closed_date > end_time:
+                        return_list.append(i)
         return return_list
 
     def get_issue_closed_date_by_id(self, id):
@@ -278,12 +285,12 @@ class JiraHelper(object):
     def html_get_unplanned_tasks_by_sprint(self, unplanned_task_lists):
         return self.html_get_bug_list_by_tasks(unplanned_task_lists)
 
-    def html_get_failed_tasks_by_sprint(self, sprint_id, id_of_board, standard_task_info_lists):
-        failed_tasks_lists = self.get_failed_tasks_by_sprint(sprint_id, id_of_board, standard_task_info_lists)
+    def html_get_un_completed_tasks_by_sprint(self, sprint_id, id_of_board, standard_task_info_lists):
+        failed_tasks_lists = self.get_un_completed_tasks_by_sprint(sprint_id, id_of_board, standard_task_info_lists)
         return self.html_get_bug_list_by_tasks(failed_tasks_lists)
 
-    def html_get_failed_story_porints_by_sprint(self, sprint_id, id_of_board, standard_task_info_lists):
-        failed_tasks_lists = self.get_failed_tasks_by_sprint(sprint_id, id_of_board, standard_task_info_lists)
+    def html_get_un_completed_story_porints_by_sprint(self, sprint_id, id_of_board, standard_task_info_lists):
+        failed_tasks_lists = self.get_un_completed_tasks_by_sprint(sprint_id, id_of_board, standard_task_info_lists)
         s_points = 0
         for item in failed_tasks_lists:
             if item["Story_point"]:
@@ -844,10 +851,15 @@ class JiraHelper(object):
             percentage = float(target_task_num)/float(total_task_num)
             return format(percentage, '.2%')
 
-    def html_get_automation_found_bug_percentange(self, bug_id_list_by_sprint, auto_found_bug_info_list):
+    def html_get_automation_found_bug_percentage(self, bug_id_list_by_sprint, auto_found_bug_info_list):
         all_defect_num = len(bug_id_list_by_sprint)
         auto_bug = len(auto_found_bug_info_list)
         return self.calculate_task_percentage(auto_bug, all_defect_num)
+
+    def html_get_un_completed_tasks_percentage(self, sprint_id, id_of_board, standard_tasks_info_by_sprint):
+        all_tasks_length = len(standard_tasks_info_by_sprint)
+        failed_tasks_length = len(self.get_un_completed_tasks_by_sprint(sprint_id, id_of_board, standard_tasks_info_by_sprint))
+        return self.calculate_task_percentage(failed_tasks_length, all_tasks_length)
 
     def get_issue_key_group_by_priority(self, bug_list):
         bug_dict = {}
@@ -909,3 +921,11 @@ class JiraHelper(object):
 
 if __name__ == "__main__":
     jira = JiraHelper(config.jira_options, config.jira_account)
+    # standard_tasks_info_by_sprint = jira.get_standard_tasks_info_by_sprint(1903, "ATEAM")
+    # print standard_tasks_info_by_sprint
+    # un_completed_tasks_nest_lists = jira.html_get_un_completed_tasks_by_sprint(1903, 60, standard_tasks_info_by_sprint)
+    # print un_completed_tasks_nest_lists
+    # un_completed_story_points = jira.html_get_un_completed_story_porints_by_sprint(1903, 60, standard_tasks_info_by_sprint)
+    # print un_completed_story_points
+    # un_completed_tasks_percentage = jira.html_get_un_completed_tasks_percentage(1903, 60, standard_tasks_info_by_sprint)
+    # print un_completed_tasks_percentage
