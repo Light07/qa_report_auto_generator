@@ -240,11 +240,12 @@ def get_report():
 
     unplanned_nest_lists = jira.html_get_unplanned_tasks_by_sprint(unplanned_tasks_info)
 
-    un_completed_tasks_nest_lists = jira.html_get_un_completed_tasks_by_sprint(sprint_id, board_id, standard_tasks_info_by_sprint)
-
     un_completed_story_points = jira.html_get_un_completed_story_porints_by_sprint(sprint_id, board_id, standard_tasks_info_by_sprint)
 
-    un_completed_tasks_percentage = jira.html_get_un_completed_tasks_percentage(sprint_id, board_id, standard_tasks_info_by_sprint)
+    raw_completed_tasks_nest_lists = jira.get_un_completed_tasks_by_sprint(sprint_id, board_id, standard_tasks_info_by_sprint)
+    un_completed_tasks_nest_lists = jira.html_get_un_completed_tasks_by_sprint(raw_completed_tasks_nest_lists)
+
+    un_completed_tasks_percentage = jira.html_get_un_completed_tasks_percentage(raw_completed_tasks_nest_lists, standard_tasks_info_by_sprint)
 
     sprint_bug_nested_list = jira.html_get_bug_list_by_tasks(raw_bug_list)
 
@@ -326,6 +327,9 @@ def get_school_report():
     sprint_status_list = []
     bug_trends = []
 
+    un_completed_story_points = 0
+    raw_completed_tasks_nest_lists = []
+
     p_name = ""
     for p in raw_project_name:
         project_name = str(p.upper())
@@ -342,6 +346,13 @@ def get_school_report():
         #
         temp_unplanned_tasks_info = jira.get_unplanned_tasks_by_sprint(sprint_id, board_id, project_name)
         unplanned_tasks_info.append(temp_unplanned_tasks_info)
+
+        temp_un_completed_story_points = jira.html_get_un_completed_story_porints_by_sprint(sprint_id, board_id, temp_standard_tasks_info_by_sprint)
+        un_completed_story_points += temp_un_completed_story_points
+
+        temp_raw_completed_tasks_nest_lists = jira.get_un_completed_tasks_by_sprint(sprint_id, board_id, temp_standard_tasks_info_by_sprint)
+        raw_completed_tasks_nest_lists.append(temp_raw_completed_tasks_nest_lists)
+
         #
         temp_raw_bug_id_list = jira.get_bug_id_by_sprint(sprint_id, board_id, project_name)
         raw_bug_id_list.append(temp_raw_bug_id_list)
@@ -375,6 +386,9 @@ def get_school_report():
     # Remove the duplicated value and format the list to next use.
     standard_task_id_list = jira.remove_nested_list_duplicated_value(standard_task_id_list)
     standard_tasks_info_by_sprint = jira.remove_nested_list_duplicated_value(standard_tasks_info_by_sprint)
+    raw_completed_tasks_nest_lists = jira.remove_nested_list_duplicated_value(raw_completed_tasks_nest_lists)
+    un_completed_tasks_nest_lists = jira.html_get_un_completed_tasks_by_sprint(raw_completed_tasks_nest_lists)
+    un_completed_tasks_percentage = jira.html_get_un_completed_tasks_percentage(raw_completed_tasks_nest_lists, standard_tasks_info_by_sprint)
     unplanned_tasks_info = jira.remove_nested_list_duplicated_value(unplanned_tasks_info)
     raw_bug_id_list = jira.remove_nested_list_duplicated_value(raw_bug_id_list)
     raw_bug_list = jira.remove_nested_list_duplicated_value(raw_bug_list)
@@ -392,12 +406,6 @@ def get_school_report():
     unplanned_story_points = jira.html_get_unplanned_story_porints_by_sprint(unplanned_tasks_info)
 
     unplanned_nest_lists = jira.html_get_unplanned_tasks_by_sprint(unplanned_tasks_info)
-
-    un_completed_tasks_nest_lists = jira.html_get_un_completed_tasks_by_sprint(sprint_id, board_id, standard_tasks_info_by_sprint)
-
-    un_completed_story_points = jira.html_get_un_completed_story_porints_by_sprint(sprint_id, board_id, standard_tasks_info_by_sprint)
-
-    un_completed_tasks_percentage = jira.html_get_un_completed_tasks_percentage(sprint_id, board_id, standard_tasks_info_by_sprint)
 
     sprint_bug_nested_list = jira.html_get_bug_list_by_tasks(raw_bug_list)
 

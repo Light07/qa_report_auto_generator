@@ -175,6 +175,8 @@ class JiraHelper(object):
                     closed_date = DateTime(self.get_issue_closed_date_by_id(i["Key"]))
                     if closed_date > end_time:
                         return_list.append(i)
+                else:
+                    return_list.append(i)
         return return_list
 
     def get_issue_closed_date_by_id(self, id):
@@ -285,9 +287,8 @@ class JiraHelper(object):
     def html_get_unplanned_tasks_by_sprint(self, unplanned_task_lists):
         return self.html_get_bug_list_by_tasks(unplanned_task_lists)
 
-    def html_get_un_completed_tasks_by_sprint(self, sprint_id, id_of_board, standard_task_info_lists):
-        failed_tasks_lists = self.get_un_completed_tasks_by_sprint(sprint_id, id_of_board, standard_task_info_lists)
-        return self.html_get_bug_list_by_tasks(failed_tasks_lists)
+    def html_get_un_completed_tasks_by_sprint(self, un_completed_task_lists):
+        return self.html_get_bug_list_by_tasks(un_completed_task_lists)
 
     def html_get_un_completed_story_porints_by_sprint(self, sprint_id, id_of_board, standard_task_info_lists):
         failed_tasks_lists = self.get_un_completed_tasks_by_sprint(sprint_id, id_of_board, standard_task_info_lists)
@@ -352,45 +353,60 @@ class JiraHelper(object):
 
         all_ids = self.get_task_id_by_query_string(j_query_string)
         task_status_change_date_list = []
-        for id in all_ids:
-            data_status = self.get_task_status_change_date(str(id))
-
-            sorted_data = sorted(data_status.iteritems(), key=lambda d:d[0])
-
-            time_start = start_date
-            while time_start <= end_date:
-                str_start_date = time_start.asdatetime().strftime("%Y-%m-%d")
-                if len(data_status) >=1:
-                    if DateTime(str_start_date) < DateTime(sorted_data[0][0]):
-                        data_status[str_start_date] = "NotOpen"
-
-                    if DateTime(str_start_date) > DateTime(sorted_data[len(sorted_data)-1][0]):
-                        data_status[str_start_date] = sorted_data[len(sorted_data)-1][1]
-
-                time_start = DateTime(str_start_date)
-                time_start  = time_start +1
-
-            for k in data_status.keys():
-                if DateTime(k) > DateTime(end_date.asdatetime().strftime("%Y-%m-%d")):
-                    del data_status[k]
-
-            task_status_change_date_list.append(data_status)
-
-        status_dict = {}
-        for d in task_status_change_date_list:
-            for k, v in d.iteritems():
-                status_dict.setdefault(k, []).append(v)
         return_list = []
         date_list = []
         open_bug_list = []
         resolved_bug_list = []
         closed_bug_list = []
 
-        for item in sorted(status_dict.iteritems(), key=lambda d:d[0]):
-            date_list.append(item[0])
-            closed_bug_list.append(item[1].count("Closed"))
-            resolved_bug_list.append(item[1].count("Resolved"))
-            open_bug_list.append(item[1].count("Created") + item[1].count("Open"))
+        if all_ids:
+            for id in all_ids:
+                data_status = self.get_task_status_change_date(str(id))
+
+                sorted_data = sorted(data_status.iteritems(), key=lambda d:d[0])
+
+                time_start = start_date
+                while time_start <= end_date:
+                    str_start_date = time_start.asdatetime().strftime("%Y-%m-%d")
+                    if len(data_status) >=1:
+                        if DateTime(str_start_date) < DateTime(sorted_data[0][0]):
+                            data_status[str_start_date] = "NotOpen"
+
+                        if DateTime(str_start_date) > DateTime(sorted_data[len(sorted_data)-1][0]):
+                            data_status[str_start_date] = sorted_data[len(sorted_data)-1][1]
+
+                    time_start = DateTime(str_start_date)
+                    time_start  = time_start +1
+
+                for k in data_status.keys():
+                    if DateTime(k) > DateTime(end_date.asdatetime().strftime("%Y-%m-%d")):
+                        del data_status[k]
+
+                task_status_change_date_list.append(data_status)
+
+            status_dict = {}
+            for d in task_status_change_date_list:
+                for k, v in d.iteritems():
+                    status_dict.setdefault(k, []).append(v)
+
+
+            for item in sorted(status_dict.iteritems(), key=lambda d:d[0]):
+                date_list.append(item[0])
+                closed_bug_list.append(item[1].count("Closed"))
+                resolved_bug_list.append(item[1].count("Resolved"))
+                open_bug_list.append(item[1].count("Created") + item[1].count("Open"))
+        else:
+            time_start = start_date
+            while time_start <= end_date:
+                str_start_date = time_start.asdatetime().strftime("%Y-%m-%d")
+                date_list.append(str_start_date)
+                time_start = DateTime(str_start_date)
+                time_start  = time_start +1
+
+            for i in range(len(date_list)):
+                open_bug_list.append(int(0))
+                resolved_bug_list.append(int(0))
+                closed_bug_list.append(int(0))
 
         return_list.append(date_list)
         return_list.append(open_bug_list)
@@ -856,9 +872,9 @@ class JiraHelper(object):
         auto_bug = len(auto_found_bug_info_list)
         return self.calculate_task_percentage(auto_bug, all_defect_num)
 
-    def html_get_un_completed_tasks_percentage(self, sprint_id, id_of_board, standard_tasks_info_by_sprint):
+    def html_get_un_completed_tasks_percentage(self, un_completed_tasks_list, standard_tasks_info_by_sprint):
         all_tasks_length = len(standard_tasks_info_by_sprint)
-        failed_tasks_length = len(self.get_un_completed_tasks_by_sprint(sprint_id, id_of_board, standard_tasks_info_by_sprint))
+        failed_tasks_length = len(un_completed_tasks_list)
         return self.calculate_task_percentage(failed_tasks_length, all_tasks_length)
 
     def get_issue_key_group_by_priority(self, bug_list):
@@ -921,11 +937,3 @@ class JiraHelper(object):
 
 if __name__ == "__main__":
     jira = JiraHelper(config.jira_options, config.jira_account)
-    # standard_tasks_info_by_sprint = jira.get_standard_tasks_info_by_sprint(1903, "ATEAM")
-    # print standard_tasks_info_by_sprint
-    # un_completed_tasks_nest_lists = jira.html_get_un_completed_tasks_by_sprint(1903, 60, standard_tasks_info_by_sprint)
-    # print un_completed_tasks_nest_lists
-    # un_completed_story_points = jira.html_get_un_completed_story_porints_by_sprint(1903, 60, standard_tasks_info_by_sprint)
-    # print un_completed_story_points
-    # un_completed_tasks_percentage = jira.html_get_un_completed_tasks_percentage(1903, 60, standard_tasks_info_by_sprint)
-    # print un_completed_tasks_percentage
