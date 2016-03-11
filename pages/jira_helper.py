@@ -166,7 +166,9 @@ class JiraHelper(object):
     def get_un_completed_tasks_by_sprint(self, sprint_id, id_of_board, standard_tasks_info_by_sprint):
         return_list = []
         sprint_info = self.get_sprint_info(sprint_id, id_of_board)
+
         for i in standard_tasks_info_by_sprint:
+
             if str(i["Status"]) != "Closed":
                 return_list.append(i)
             else:
@@ -175,8 +177,7 @@ class JiraHelper(object):
                     closed_date = DateTime(self.get_issue_closed_date_by_id(i["Key"]))
                     if closed_date > end_time:
                         return_list.append(i)
-                else:
-                    return_list.append(i)
+
         return return_list
 
     def get_issue_closed_date_by_id(self, id):

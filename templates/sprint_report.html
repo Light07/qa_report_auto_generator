@@ -288,7 +288,7 @@
 {% if sprint_status != "Success" %}
 <div class="failed-tasks">
     <h4>Un-Completed Tasks</h4>
-        <div>Total un-completed story points: <b>{{un_completed_story_points|safe}}</b> . Percentage of un-completed tasks in sprint: <b>{{failed_tasks_percentage|safe}}</b></div>
+        <div>Total un-completed story points: <b>{{un_completed_story_points|safe}}</b> . Percentage of un-completed tasks in sprint: <b>{{un_completed_tasks_percentage|safe}}</b></div>
         <div id="failed_stories_div">
             <div class="btn-toggle-table">Expand/Collapse</div>
              <table class="table sortable">
