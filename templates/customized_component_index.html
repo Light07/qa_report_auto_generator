@@ -8,7 +8,7 @@
 <div id="loading" style="display: none; text-align: center; padding-top: 50px;"><img src="static/images/loading.gif" ></div>
 <div id="content">
     {{ super() }}
-    <form action = "{{url_for('engage_customized_index')}}"  method="POST" name="form" >
+    <form action = "{{url_for('customized_component_index')}}"  method="POST" name="form" >
     {{ form.hidden_tag() }}
 
     {% for message in form.project_name.errors %}

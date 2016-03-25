@@ -3,7 +3,7 @@ from flask import Flask, request, redirect, url_for, render_template, flash, ses
 
 import config
 from pages.jira_helper import JiraHelper
-from pages.forms import EFForm, SelectFieldForm, EngageCustomizedForm, SchoolCustomizedForm
+from pages.forms import EFForm, SelectFieldForm, CustomizedComponentForm, SchoolCustomizedForm
 
 app = Flask(__name__)
 app.secret_key = config.secrt_key
@@ -34,12 +34,12 @@ def index():
 
             # Return 10 sprint based on given board id
             jira = JiraHelper(config.jira_options, jira_account)
-            sprint_choice = jira.html_get_num_of_sprint_names_by_board_id(int(form.board_id.data))
+            sprint_choice = jira.html_get_num_of_sprint_names_by_board_id(int(session['board_id']))
             sprint_choice.append(('-1', 'Please select a sprint'))
             session['sprint_name'] = sprint_choice
 
-            if (request.form.get('project_name')).upper() in config.p_name and request.form.get('board_id') in config.b_id:
-                return redirect(url_for('engage_customized_index'))
+            if (request.form.get('project_name')).upper() in config.p_name.values() and request.form.get('board_id') in config.b_id.values():
+                return redirect(url_for('customized_component_index'))
 
             return redirect(url_for('get_sprint_list'))
         else:
@@ -51,31 +51,32 @@ def index():
     elif request.method == 'GET':
         return  render_template('index.html',form=form)
 
-@app.route('/engage_customized_index', methods=["GET", "POST"])
-def engage_customized_index():
-    form = EngageCustomizedForm()
+@app.route('/customized_component_index', methods=["GET", "POST"])
+def customized_component_index():
+    form = CustomizedComponentForm()
     form.qa_resource.data = session['qa_resource']
     form.username.data = session['username']
     form.password.data = session['password']
     form.board_id.data = session['board_id']
     form.project_name.data =session['project_name']
     form.sprint_name.choices= session['sprint_name']
+    form.quick_filter.choices = config.quick_filter_choice[session['project_name']]
 
     if request.method== "POST" :
         if form.submit.data and form.validate():
-            if form.quick_filter.data != "Show All":
+            if str(form.quick_filter.data) != str(config.show_all):
                 session["quick_filter"] = form.quick_filter.data
             session["choice_sprint"] = form.sprint_name.data
 
             return redirect(url_for('get_report'))
         else:
             flash('All fields are required.')
-            return render_template('engage_customized_index.html', form=form)
+            return render_template('customized_component_index.html', form=form)
 
     elif request.method == "GET":
-        return render_template('engage_customized_index.html', form=form)
+        return render_template('customized_component_index.html', form=form)
 
-    return render_template('engage_customized_index.html', form=form)
+    return render_template('customized_component_index.html', form=form)
 
 @app.route('/school_customized_index', methods=["GET", "POST"])
 def school_customized_index():
@@ -150,7 +151,7 @@ def get_sprint_list():
 def success():
     global response
     response.headers["Content-Disposition"] = "attachment; filename=Sprint_Report.html"
-    request.headers.get('User-Agent')
+    response.headers.get('User-Agent')
     return response
 
 @app.route('/report', methods=["GET"])
@@ -175,62 +176,111 @@ def get_report():
 
     sprint_status = jira.html_get_sprint_status(sprint_id, board_id)
 
+    original_standard_task_id_list = jira.get_standard_tasks_id_by_sprint(sprint_id, project_name)
+    original_standard_tasks_info_by_sprint = jira.get_standard_tasks_info_by_sprint(sprint_id, project_name)
+    original_unplanned_tasks_info = jira.get_unplanned_tasks_by_sprint(sprint_id, board_id, project_name)
+    original_raw_bug_id_list = jira.get_bug_id_by_sprint(sprint_id, board_id, project_name)
+    original_raw_bug_list = jira.get_bug_info_by_sprint(sprint_id, board_id, project_name)
+    original_change_request_id_list = jira.get_change_request_id_by_sprint(sprint_id, project_name)
+    original_raw_change_request_list = jira.get_change_request_info_by_sprint(sprint_id, project_name)
+    original_raw_live_defect_id_list = jira.get_live_defect_id_by_sprint(sprint_id, project_name)
+    original_raw_live_defect_list = jira.get_live_defect_info_by_sprint(sprint_id, project_name)
+    original_bugs_opened_before_but_closed_in_sprint = jira.get_bugs_not_found_in_sprint_but_closed_in_sprint(sprint_id, board_id, project_name)
+    original_raw_automation_bug_list = jira.get_automation_found_bug_info_by_sprint(sprint_id, board_id, project_name)
+
     if "quick_filter" in session:
 
-        standard_task_id_list = jira.get_standard_tasks_id_by_sprint(sprint_id, project_name)
-        standard_task_id_list = jira.get_filtered_task_id_by_component(standard_task_id_list, session["quick_filter"])
-        #
-        standard_tasks_info_by_sprint = jira.get_standard_tasks_info_by_sprint(sprint_id, project_name)
-        standard_tasks_info_by_sprint = jira.get_filtered_task_info_by_component(standard_tasks_info_by_sprint, session["quick_filter"])
-        #
-        unplanned_tasks_info = jira.get_unplanned_tasks_by_sprint(sprint_id, board_id, project_name, session["quick_filter"])
-        #
-        raw_bug_id_list = jira.get_bug_id_by_sprint(sprint_id, board_id, project_name)
-        raw_bug_id_list = jira.get_filtered_task_id_by_component(raw_bug_id_list, session["quick_filter"])
-        #
-        raw_bug_list = jira.get_bug_info_by_sprint(sprint_id, board_id, project_name)
-        raw_bug_list = jira.get_filtered_task_info_by_component(raw_bug_list, session["quick_filter"])
-        #
-        change_request_id_list = jira.get_change_request_id_by_sprint(sprint_id, project_name)
-        change_request_id_list = jira.get_filtered_task_id_by_component(change_request_id_list, session["quick_filter"])
-        #
-        raw_live_defect_id_list = jira.get_live_defect_id_by_sprint(sprint_id, project_name)
-        raw_live_defect_id_list = jira.get_filtered_task_id_by_component(raw_live_defect_id_list, session["quick_filter"])
-        #
-        raw_live_defect_list = jira.get_live_defect_info_by_sprint(sprint_id, project_name)
-        raw_live_defect_list = jira.get_filtered_task_info_by_component(raw_live_defect_list, session["quick_filter"])
-        #
-        bugs_opened_before_but_closed_in_sprint = jira.get_bugs_not_found_in_sprint_but_closed_in_sprint(sprint_id, board_id, project_name)
-        bugs_opened_before_but_closed_in_sprint = jira.get_filtered_task_info_by_component(bugs_opened_before_but_closed_in_sprint, session["quick_filter"])
-        #
-        raw_automation_bug_list = jira.get_automation_found_bug_info_by_sprint(sprint_id, board_id, project_name)
-        raw_automation_bug_list = jira.get_filtered_task_info_by_component(raw_automation_bug_list, session["quick_filter"])
-        #
-        raw_change_request_list = jira.get_change_request_info_by_sprint(sprint_id, project_name)
-        raw_change_request_list = jira.get_filtered_task_info_by_component(raw_change_request_list, session["quick_filter"])
-        #
-        bug_trends = jira.html_get_total_bug_and_open_bug_trend_by_sprint(sprint_id, board_id, project_name, session["quick_filter"])
+        if str(session["quick_filter"]) != str(config.show_all_but_exclude_those_have_components):
+            standard_task_id_list = jira.get_filtered_task_id_by_component(original_standard_task_id_list, session["quick_filter"])
+            #
+            standard_tasks_info_by_sprint = jira.get_filtered_task_info_by_component(original_standard_tasks_info_by_sprint, session["quick_filter"])
+            #
+            unplanned_tasks_info = jira.get_filtered_task_info_by_component(original_unplanned_tasks_info, session["quick_filter"])
+            #
+            raw_bug_id_list = jira.get_filtered_task_id_by_component(original_raw_bug_id_list, session["quick_filter"])
+            #
+            raw_bug_list = jira.get_filtered_task_info_by_component(original_raw_bug_list, session["quick_filter"])
+            #
+            change_request_id_list = jira.get_filtered_task_id_by_component(original_change_request_id_list, session["quick_filter"])
+            #
+            raw_live_defect_id_list = jira.get_filtered_task_id_by_component(original_raw_live_defect_id_list, session["quick_filter"])
+            #
+            raw_live_defect_list = jira.get_filtered_task_info_by_component(original_raw_live_defect_list, session["quick_filter"])
+            #
+            bugs_opened_before_but_closed_in_sprint = jira.get_filtered_task_info_by_component(original_bugs_opened_before_but_closed_in_sprint, session["quick_filter"])
+            #
+            raw_automation_bug_list = jira.get_filtered_task_info_by_component(original_raw_automation_bug_list, session["quick_filter"])
+            #
+            raw_change_request_list = jira.get_filtered_task_info_by_component(original_raw_change_request_list, session["quick_filter"])
+            #
+            bug_trends = jira.html_get_total_bug_and_open_bug_trend_by_sprint(sprint_id, board_id, project_name, session["quick_filter"])
+        else:
+            standard_task_id_list = original_standard_task_id_list
+            standard_tasks_info_by_sprint = original_standard_tasks_info_by_sprint
+            raw_bug_id_list = original_raw_bug_id_list
+            raw_bug_list = original_raw_bug_list
+            change_request_id_list = original_change_request_id_list
+            raw_live_defect_id_list = original_raw_live_defect_id_list
+            raw_live_defect_list = original_raw_live_defect_list
+            unplanned_tasks_info = original_unplanned_tasks_info
+            bugs_opened_before_but_closed_in_sprint = original_bugs_opened_before_but_closed_in_sprint
+            raw_automation_bug_list = original_raw_automation_bug_list
+            raw_change_request_list = original_raw_change_request_list
+            filter_string_list = []
+            filter_string = ','
+
+            for item in config.quick_filter_choice[session["project_name"]]:
+                if str(item[0]) != str(config.show_all_but_exclude_those_have_components) and str(item[0]) != str(config.show_all):
+                    filter_string_list.append(item[0])
+                    filter_string = ',' + item[0] + filter_string
+
+            filter_string = filter_string.strip(',')
+            
+            standard_task_id_list = jira.exclude_filtered_task_id_by_component(standard_task_id_list, filter_string_list)
+            #
+            standard_tasks_info_by_sprint = jira.exclude_filtered_task_info_by_component(standard_tasks_info_by_sprint, filter_string_list)
+            #
+            unplanned_tasks_info = jira.exclude_filtered_task_info_by_component(unplanned_tasks_info, filter_string_list)
+            #
+            raw_bug_id_list = jira.exclude_filtered_task_id_by_component(raw_bug_id_list, filter_string_list)
+            #
+            raw_bug_list = jira.exclude_filtered_task_info_by_component(raw_bug_list, filter_string_list)
+            #
+            change_request_id_list = jira.exclude_filtered_task_id_by_component(change_request_id_list,  filter_string_list)
+            #
+            raw_live_defect_id_list = jira.exclude_filtered_task_id_by_component(raw_live_defect_id_list, filter_string_list)
+            #
+            raw_live_defect_list = jira.exclude_filtered_task_info_by_component(raw_live_defect_list,filter_string_list)
+            #
+            bugs_opened_before_but_closed_in_sprint = jira.exclude_filtered_task_info_by_component(bugs_opened_before_but_closed_in_sprint, filter_string_list)
+            #
+            raw_automation_bug_list = jira.exclude_filtered_task_info_by_component(raw_automation_bug_list, filter_string_list)
+            #
+            raw_change_request_list = jira.exclude_filtered_task_info_by_component(raw_change_request_list, filter_string_list)
+            #
+            bug_trends = jira.html_get_total_bug_and_open_bug_trend_by_sprint_exclude_component_filter(sprint_id, board_id, project_name, filter_string)
+
     else:
 
-        standard_task_id_list = jira.get_standard_tasks_id_by_sprint(sprint_id, project_name)
-        standard_tasks_info_by_sprint = jira.get_standard_tasks_info_by_sprint(sprint_id, project_name)
+        standard_task_id_list = original_standard_task_id_list
+        standard_tasks_info_by_sprint = original_standard_tasks_info_by_sprint
         #
-        unplanned_tasks_info = jira.get_unplanned_tasks_by_sprint(sprint_id, board_id, project_name)
+        unplanned_tasks_info = original_unplanned_tasks_info
         #
-        raw_bug_id_list = jira.get_bug_id_by_sprint(sprint_id, board_id, project_name)
-        raw_bug_list = jira.get_bug_info_by_sprint(sprint_id, board_id, project_name)
+        raw_bug_id_list = original_raw_bug_id_list
+        raw_bug_list = original_raw_bug_list
         #
-        change_request_id_list = jira.get_change_request_id_by_sprint(sprint_id, project_name)
+        change_request_id_list = original_change_request_id_list
         #
-        raw_live_defect_id_list = jira.get_live_defect_id_by_sprint(sprint_id, project_name)
+        raw_live_defect_id_list = original_raw_live_defect_id_list
         #
-        raw_live_defect_list = jira.get_live_defect_info_by_sprint(sprint_id, project_name)
+        raw_live_defect_list = original_raw_live_defect_list
 
-        bugs_opened_before_but_closed_in_sprint = jira.get_bugs_not_found_in_sprint_but_closed_in_sprint(sprint_id, board_id, project_name)
+        bugs_opened_before_but_closed_in_sprint = original_bugs_opened_before_but_closed_in_sprint
         #
-        raw_automation_bug_list = jira.get_automation_found_bug_info_by_sprint(sprint_id, board_id, project_name)
+        raw_automation_bug_list = original_raw_automation_bug_list
         #
-        raw_change_request_list = jira.get_change_request_info_by_sprint(sprint_id, project_name)
+        raw_change_request_list = original_raw_change_request_list
         #
         bug_trends = jira.html_get_total_bug_and_open_bug_trend_by_sprint(sprint_id, board_id, project_name)
 
@@ -459,4 +509,4 @@ def get_school_report():
 
 if __name__ == '__main__':
     # app.run(debug=True, threaded=False)
-    app.run(host="0.0.0.0", debug=False, threaded=True)
+    app.run(host="0.0.0.0", debug=False, threaded=True, use_reloader=False)

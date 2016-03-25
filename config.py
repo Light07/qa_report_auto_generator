@@ -2,7 +2,7 @@ __author__ = 'kevin.cai'
 
 import os
 
-jira_options = {'server':"https://jira.englishtown.com"}
+jira_options = {'server':"https://jira.englishtown.com"}#, 'verify': False}
 
 jira_account = {'username':"kevin.cai", 'password':"***"}
 
@@ -11,9 +11,9 @@ project_name = None
 
 board_id = None
 
-# For engage team, customized usage
-p_name = "ME"
-b_id = "416"
+# For engage team, ATEAM, customized usage
+p_name = {"Engage": "ME", "ATEAM":"ATEAM"}
+b_id = {"Engage":"416", "ATEAM":"60"}
 
 # For School team, customized usage
 s_name = "SPC, SD"
@@ -21,7 +21,12 @@ s_dict = {"SPC":128 , "SD":42}
 school_project_choice = [('SPC', 'SPC'), ('SD', 'SD')]
 
 # Components filter.
-quick_filter_choice = [('iOS', 'iOS'), ('Android', 'Android'), ('Show All', "Show All")]
+show_all = "Show All"
+show_all_but_exclude_those_have_components = "Show All but exclude above"
+quick_filter_choice = {"ME":[('iOS', 'iOS'), ('Android', 'Android'), \
+                             (show_all_but_exclude_those_have_components, show_all_but_exclude_those_have_components), (show_all, show_all)],\
+                       "ATEAM":[('EVCMobile', 'EVCMobile'), \
+                                (show_all_but_exclude_those_have_components, show_all_but_exclude_those_have_components), (show_all, show_all)]}
 
 # Used to control how many sprint will shown on index page.
 num_of_sprint_shown = 10

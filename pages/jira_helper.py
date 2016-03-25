@@ -274,10 +274,11 @@ class JiraHelper(object):
         end_date = DateTime(str(sprint_info["endDate"]) + ' ' +  "US/Eastern")
         j_query_string = '''project = {project} and issuetype in ({issue_type1}) and issuetype not in ({issue_type2}) and created >= {start_day} AND created <= {end_day} and sprint = {s_id}'''\
                 .format(project= project, issue_type1= self.IssueType.StandardType, issue_type2= self.IssueType.Bug, start_day=start_date.asdatetime().strftime("%Y-%m-%d"), end_day=end_date.asdatetime().strftime("%Y-%m-%d"), s_id=sprint_id)
-        all_info = self.get_task_info_by_query_string(j_query_string)
 
         if component_filter:
             j_query_string = j_query_string + ''' and component in ({component})'''.format(component=component_filter)
+
+        all_info = self.get_task_info_by_query_string(j_query_string)
 
         for s in all_info:
             if s["Created"] > start_time:
@@ -415,6 +416,90 @@ class JiraHelper(object):
         return_list.append(closed_bug_list)
 
         return return_list
+    def html_get_total_bug_and_open_bug_trend_by_sprint_exclude_component_filter(self, sprint_id, id_of_board=config.board_id, project=config.project_name, component_filter=None):
+        '''
+        :param id_of_board:
+        :param sprint_id:
+        :return: [
+          ['2015-12-28', '2015-12-29', '2015-12-30', '2015-12-31'], #date in sprint.
+          [0, 1, 1, 1],#open bugs for each day.
+          [0, 0, 0, 0], #resolved bugs for each day.
+          [0, 0, 0, 0]  #closed bugs for each day
+          ]
+        '''
+        sprint_info = self.get_sprint_info(sprint_id, id_of_board)
+        start_date = DateTime(str(sprint_info["startDate"]) + ' ' +  "US/Eastern")
+        end_date = DateTime(str(sprint_info["endDate"]) + ' ' +  "US/Eastern")
+
+        j_query_string = '''project = {project} AND issuetype in ({issue_type}) and created >= {start_day} AND created <= {end_day}'''\
+                .format(project= project, issue_type= self.IssueType.Bug, start_day=start_date.asdatetime().strftime("%Y-%m-%d"), end_day=end_date.asdatetime().strftime("%Y-%m-%d"))
+
+        if component_filter:
+            j_query_string = j_query_string + ''' and component not in ({component})'''.format(component=component_filter)
+
+        all_ids = self.get_task_id_by_query_string(j_query_string)
+        task_status_change_date_list = []
+        return_list = []
+        date_list = []
+        open_bug_list = []
+        resolved_bug_list = []
+        closed_bug_list = []
+
+        if all_ids:
+            for id in all_ids:
+                data_status = self.get_task_status_change_date(str(id))
+
+                sorted_data = sorted(data_status.iteritems(), key=lambda d:d[0])
+
+                time_start = start_date
+                while time_start <= end_date:
+                    str_start_date = time_start.asdatetime().strftime("%Y-%m-%d")
+                    if len(data_status) >=1:
+                        if DateTime(str_start_date) < DateTime(sorted_data[0][0]):
+                            data_status[str_start_date] = "NotOpen"
+
+                        if DateTime(str_start_date) > DateTime(sorted_data[len(sorted_data)-1][0]):
+                            data_status[str_start_date] = sorted_data[len(sorted_data)-1][1]
+
+                    time_start = DateTime(str_start_date)
+                    time_start  = time_start +1
+
+                for k in data_status.keys():
+                    if DateTime(k) > DateTime(end_date.asdatetime().strftime("%Y-%m-%d")):
+                        del data_status[k]
+
+                task_status_change_date_list.append(data_status)
+
+            status_dict = {}
+            for d in task_status_change_date_list:
+                for k, v in d.iteritems():
+                    status_dict.setdefault(k, []).append(v)
+
+
+            for item in sorted(status_dict.iteritems(), key=lambda d:d[0]):
+                date_list.append(item[0])
+                closed_bug_list.append(item[1].count("Closed"))
+                resolved_bug_list.append(item[1].count("Resolved"))
+                open_bug_list.append(item[1].count("Created") + item[1].count("Open"))
+        else:
+            time_start = start_date
+            while time_start <= end_date:
+                str_start_date = time_start.asdatetime().strftime("%Y-%m-%d")
+                date_list.append(str_start_date)
+                time_start = DateTime(str_start_date)
+                time_start  = time_start +1
+
+            for i in range(len(date_list)):
+                open_bug_list.append(int(0))
+                resolved_bug_list.append(int(0))
+                closed_bug_list.append(int(0))
+
+        return_list.append(date_list)
+        return_list.append(open_bug_list)
+        return_list.append(resolved_bug_list)
+        return_list.append(closed_bug_list)
+
+        return return_list
 
     def html_get_total_bug_and_open_bug_trend_by_sprint_and_project(self, project_nested_trends_lists):
         '''
@@ -477,12 +562,41 @@ class JiraHelper(object):
                     return_list.append(l)
         return return_list
 
+    def exclude_filtered_task_info_by_component(self, task_lists, component_value_list):
+        return_list = []
+        for l in task_lists:
+            if l['Components']:
+                for item in component_value_list:
+                    if item not in str(l['Components']):
+                        return_list.append(l)
+            else:
+                return_list.append(l)
+        return return_list
+
+    def get_get_different_value_between_lists(self,sub_nested_lists, all_nested_lists):
+        diff_list = []
+        for l in all_nested_lists:
+            if l not in sub_nested_lists:
+                diff_list.append(l)
+        return diff_list
+
     def get_filtered_task_info_by_assignee(self, task_lists, assignee_value):
         return_list = []
         for l in task_lists:
             if l['Assignee']:
                 if str(l['Assignee']) in str(assignee_value):
                     return_list.append(l)
+        return return_list
+
+    def exclude_filtered_task_info_by_assignee(self, task_lists, assignee_value_list):
+        return_list = []
+        for l in task_lists:
+            if l['Assignee']:
+                for item in assignee_value_list:
+                    if str(item) not in str(l['Assignee']):
+                        return_list.append(l)
+            else:
+                return_list.append(l)
         return return_list
 
     def get_filtered_task_id_by_component(self, task_id_lists, component_value):
@@ -492,6 +606,18 @@ class JiraHelper(object):
             if item.has_key("Components"):
                 if str(component_value) in str(item['Components']):
                     return_list.append(l)
+        return return_list
+
+    def exclude_filtered_task_id_by_component(self, task_id_lists, component_value_list):
+        return_list = []
+        for l in task_id_lists:
+            item = self.get_task_info_by_id(l)
+            if item.has_key("Components"):
+                for i in component_value_list:
+                    if str(i) not in str(item['Components']):
+                        return_list.append(l)
+            else:
+                return_list.append(l)
         return return_list
 
     def get_task_info_by_query_string(self, j_query):
