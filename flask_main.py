@@ -235,7 +235,7 @@ def get_report():
                     filter_string = ',' + item[0] + filter_string
 
             filter_string = filter_string.strip(',')
-            
+
             standard_task_id_list = jira.exclude_filtered_task_id_by_component(standard_task_id_list, filter_string_list)
             #
             standard_tasks_info_by_sprint = jira.exclude_filtered_task_info_by_component(standard_tasks_info_by_sprint, filter_string_list)

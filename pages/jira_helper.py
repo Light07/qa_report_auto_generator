@@ -435,7 +435,7 @@ class JiraHelper(object):
                 .format(project= project, issue_type= self.IssueType.Bug, start_day=start_date.asdatetime().strftime("%Y-%m-%d"), end_day=end_date.asdatetime().strftime("%Y-%m-%d"))
 
         if component_filter:
-            j_query_string = j_query_string + ''' and component not in ({component})'''.format(component=component_filter)
+            j_query_string = j_query_string + ''' and (component is empty or component not in ({component}))'''.format(component=component_filter)
 
         all_ids = self.get_task_id_by_query_string(j_query_string)
         task_status_change_date_list = []
@@ -545,7 +545,7 @@ class JiraHelper(object):
         issue_dict = {}
         issue_dict["Key"] = issue.key
         issue_dict["Id"] = issue.id
-        issue_dict["Summary"] = issue.fields.summary
+        issue_dict["Summary"] = (issue.fields.summary).encode('ascii','ignore')
         issue_dict["Priority"] = issue.fields.priority.name
         issue_dict["Status"] = issue.fields.status.name
         issue_dict["Created"] = issue.fields.created
