@@ -236,6 +236,7 @@ def get_report():
 
             filter_string = filter_string.strip(',')
 
+
             standard_task_id_list = jira.exclude_filtered_task_id_by_component(standard_task_id_list, filter_string_list)
             #
             standard_tasks_info_by_sprint = jira.exclude_filtered_task_info_by_component(standard_tasks_info_by_sprint, filter_string_list)
@@ -322,7 +323,8 @@ def get_report():
     story_share_detail = jira.html_get_bug_list_by_tasks(story_share_detail)
 
     render = render_template('sprint_report.html', project_required=project_name, \
-                             customized_component=session["quick_filter"] if "quick_filter" in session else None, \
+                             customized_component=session["quick_filter"] if "quick_filter" in session \
+                                        and str(session["quick_filter"]) != str(config.show_all_but_exclude_those_have_components) else None, \
                              sprint_name_string=sprint_name, \
                              qa_resource = qa, \
                              sprint_status=sprint_status, actual_story_points=actual_points, \

@@ -562,17 +562,6 @@ class JiraHelper(object):
                     return_list.append(l)
         return return_list
 
-    def exclude_filtered_task_info_by_component(self, task_lists, component_value_list):
-        return_list = []
-        for l in task_lists:
-            if l['Components']:
-                for item in component_value_list:
-                    if item not in str(l['Components']):
-                        return_list.append(l)
-            else:
-                return_list.append(l)
-        return return_list
-
     def get_get_different_value_between_lists(self,sub_nested_lists, all_nested_lists):
         diff_list = []
         for l in all_nested_lists:
@@ -612,10 +601,25 @@ class JiraHelper(object):
         return_list = []
         for l in task_id_lists:
             item = self.get_task_info_by_id(l)
-            if item.has_key("Components"):
-                for i in component_value_list:
-                    if str(i) not in str(item['Components']):
-                        return_list.append(l)
+            com_list = []
+            if item.has_key("Components") and item["Components"]:
+                for i in item["Components"]:
+                    com_list.append(str(i))
+                if not set(com_list).intersection(set(component_value_list)):
+                    return_list.append(l)
+            else:
+                return_list.append(l)
+        return return_list
+
+    def exclude_filtered_task_info_by_component(self, task_lists, component_value_list):
+        return_list = []
+        for l in task_lists:
+            com_list = []
+            if l.has_key("Components") and l["Components"]:
+                for i in l["Components"]:
+                    com_list.append(str(i))
+                if not set(com_list).intersection(set(component_value_list)):
+                    return_list.append(l)
             else:
                 return_list.append(l)
         return return_list
