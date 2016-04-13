@@ -473,6 +473,30 @@
         <br />
         <div>Percentage of tasks which are change requests: <b>{{sprint_change_request_percentage|safe}}</b></div>
 </div>
+
+<div class="planned-tasks">
+    <h4>Tasks planned to do in this sprint:</h4>
+        <div id="planned_stories_div">
+            <div class="btn-toggle-table">Expand/Collapse</div>
+            <table class="table sortable">
+                <tr>
+                    <!--<th width="30">#</th>-->
+                    <th width="100">Key</th>
+                    <th width="100">Priority</th>
+                    <th>Summary</th>
+                    <th width="100">Status</th>
+                 </tr>
+                {% for item in range(planned_nest_lists|length) %}
+                <tr>
+                    <!--<td>{{item}}</td>-->
+                    {% for l in planned_nest_lists[item] %}
+                        <td> {{l|safe}} </td>
+                    {% endfor %}
+                </tr>
+                {% endfor %}
+                </table>
+        </div>
+</div>
 </div>
 
 </body>

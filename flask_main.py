@@ -179,6 +179,7 @@ def get_report():
     original_standard_task_id_list = jira.get_standard_tasks_id_by_sprint(sprint_id, project_name)
     original_standard_tasks_info_by_sprint = jira.get_standard_tasks_info_by_sprint(sprint_id, project_name)
     original_unplanned_tasks_info = jira.get_unplanned_tasks_by_sprint(sprint_id, board_id, project_name)
+    original_planned_tasks_info = jira.get_planned_tasks_by_sprint(sprint_id, board_id, project_name)
     original_raw_bug_id_list = jira.get_bug_id_by_sprint(sprint_id, board_id, project_name)
     original_raw_bug_list = jira.get_bug_info_by_sprint(sprint_id, board_id, project_name)
     original_change_request_id_list = jira.get_change_request_id_by_sprint(sprint_id, project_name)
@@ -196,6 +197,8 @@ def get_report():
             standard_tasks_info_by_sprint = jira.get_filtered_task_info_by_component(original_standard_tasks_info_by_sprint, session["quick_filter"])
             #
             unplanned_tasks_info = jira.get_filtered_task_info_by_component(original_unplanned_tasks_info, session["quick_filter"])
+            #
+            planned_tasks_info = jira.get_filtered_task_info_by_component(original_planned_tasks_info, session["quick_filter"])
             #
             raw_bug_id_list = jira.get_filtered_task_id_by_component(original_raw_bug_id_list, session["quick_filter"])
             #
@@ -223,6 +226,7 @@ def get_report():
             raw_live_defect_id_list = original_raw_live_defect_id_list
             raw_live_defect_list = original_raw_live_defect_list
             unplanned_tasks_info = original_unplanned_tasks_info
+            planned_tasks_info = original_planned_tasks_info
             bugs_opened_before_but_closed_in_sprint = original_bugs_opened_before_but_closed_in_sprint
             raw_automation_bug_list = original_raw_automation_bug_list
             raw_change_request_list = original_raw_change_request_list
@@ -242,6 +246,8 @@ def get_report():
             standard_tasks_info_by_sprint = jira.exclude_filtered_task_info_by_component(standard_tasks_info_by_sprint, filter_string_list)
             #
             unplanned_tasks_info = jira.exclude_filtered_task_info_by_component(unplanned_tasks_info, filter_string_list)
+            #
+            planned_tasks_info = jira.exclude_filtered_task_info_by_component(planned_tasks_info, filter_string_list)
             #
             raw_bug_id_list = jira.exclude_filtered_task_id_by_component(raw_bug_id_list, filter_string_list)
             #
@@ -267,6 +273,7 @@ def get_report():
         standard_tasks_info_by_sprint = original_standard_tasks_info_by_sprint
         #
         unplanned_tasks_info = original_unplanned_tasks_info
+        planned_tasks_info = original_planned_tasks_info
         #
         raw_bug_id_list = original_raw_bug_id_list
         raw_bug_list = original_raw_bug_list
@@ -290,6 +297,7 @@ def get_report():
     unplanned_story_points = jira.html_get_unplanned_story_porints_by_sprint(unplanned_tasks_info)
 
     unplanned_nest_lists = jira.html_get_unplanned_tasks_by_sprint(unplanned_tasks_info)
+    planned_nest_lists = jira.html_get_planned_tasks_by_sprint(planned_tasks_info)
 
     un_completed_story_points = jira.html_get_un_completed_story_porints_by_sprint(sprint_id, board_id, standard_tasks_info_by_sprint)
 
@@ -329,6 +337,7 @@ def get_report():
                              qa_resource = qa, \
                              sprint_status=sprint_status, actual_story_points=actual_points, \
                              unplanned_story_points=unplanned_story_points, unplanned_nest_lists=unplanned_nest_lists, \
+                             planned_nest_lists =planned_nest_lists,\
                              un_finished_tasks_nest_lists=un_completed_tasks_nest_lists, \
                              un_completed_story_points = un_completed_story_points, \
                              un_completed_tasks_percentage=un_completed_tasks_percentage, \
@@ -368,6 +377,7 @@ def get_school_report():
     standard_task_id_list = []
     standard_tasks_info_by_sprint = []
     unplanned_tasks_info = []
+    planned_tasks_info = []
     raw_bug_id_list = []
     raw_bug_list = []
     change_request_id_list = []
@@ -398,6 +408,8 @@ def get_school_report():
         #
         temp_unplanned_tasks_info = jira.get_unplanned_tasks_by_sprint(sprint_id, board_id, project_name)
         unplanned_tasks_info.append(temp_unplanned_tasks_info)
+        temp_planned_tasks_info = jira.get_planned_tasks_by_sprint(sprint_id, board_id, project_name)
+        planned_tasks_info.append(temp_planned_tasks_info)
 
         temp_un_completed_story_points = jira.html_get_un_completed_story_porints_by_sprint(sprint_id, board_id, temp_standard_tasks_info_by_sprint)
         un_completed_story_points += temp_un_completed_story_points
@@ -442,6 +454,7 @@ def get_school_report():
     un_completed_tasks_nest_lists = jira.html_get_un_completed_tasks_by_sprint(raw_un_completed_tasks_nest_lists)
     un_completed_tasks_percentage = jira.html_get_un_completed_tasks_percentage(raw_un_completed_tasks_nest_lists, standard_tasks_info_by_sprint)
     unplanned_tasks_info = jira.remove_nested_list_duplicated_value(unplanned_tasks_info)
+    planned_tasks_info = jira.remove_nested_list_duplicated_value(planned_tasks_info)
     raw_bug_id_list = jira.remove_nested_list_duplicated_value(raw_bug_id_list)
     raw_bug_list = jira.remove_nested_list_duplicated_value(raw_bug_list)
     change_request_id_list = jira.remove_nested_list_duplicated_value(change_request_id_list)
@@ -458,6 +471,8 @@ def get_school_report():
     unplanned_story_points = jira.html_get_unplanned_story_porints_by_sprint(unplanned_tasks_info)
 
     unplanned_nest_lists = jira.html_get_unplanned_tasks_by_sprint(unplanned_tasks_info)
+    planned_nest_lists = jira.html_get_unplanned_tasks_by_sprint(planned_tasks_info)
+
 
     sprint_bug_nested_list = jira.html_get_bug_list_by_tasks(raw_bug_list)
 
@@ -487,6 +502,7 @@ def get_school_report():
                             qa_resource = qa,\
                             sprint_status=sprint_status, actual_story_points=actual_points, \
                             unplanned_story_points=unplanned_story_points, unplanned_nest_lists=unplanned_nest_lists, \
+                            planned_nest_lists = planned_nest_lists,\
                             un_completed_tasks_nest_lists=un_completed_tasks_nest_lists, \
                             un_completed_story_points=un_completed_story_points,\
                             un_completed_tasks_percentage =un_completed_tasks_percentage, \

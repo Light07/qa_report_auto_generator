@@ -154,8 +154,6 @@ class JiraHelper(object):
                             closed_date = DateTime(self.get_issue_closed_date_by_id(i["Key"]))
                             if closed_date <= end_time:
                                 story_point += int(i["Story_point"])
-                            else:
-                                print i["Key"]
         else:
              for i in standard_tasks_info_by_sprint:
                  if i["Status"] == "Closed" and i["Story_point"]:
@@ -207,6 +205,20 @@ class JiraHelper(object):
                         if item.toString == 'Resolved':
                             resolved_date = history.created
         return resolved_date
+
+    def get_time_dict_when_string_logged_in_history_by_task(self, issue_id, sprint_id, board_id, string="Sprint"):
+        return_dict = {}
+        sprint_name = self.get_sprint_info(sprint_id, board_id)["name"]
+
+        issue = self.jira.issue(issue_id, expand='changelog')
+        change_log = issue.changelog
+        for history in change_log.histories:
+            for item in history.items:
+                if item.field == string:
+                    if sprint_name in item.toString :
+                        return_dict["log_time"] = DateTime(history.created )
+
+        return return_dict
 
     def get_task_status_change_date(self, id):
         '''
@@ -265,29 +277,51 @@ class JiraHelper(object):
             final_dict[return_list[0][0]] = return_list[0][1]
         return final_dict #sorted(final_dict.iteritems(), key=lambda d:d[0]) #
 
-    def get_unplanned_tasks_by_sprint(self, sprint_id, id_of_board, project, component_filter=None):
+    def get_unplanned_tasks_by_sprint(self, sprint_id, id_of_board, project, component_filter=None, string="Sprint"):
         return_list = []
         sprint_info = self.get_sprint_info(sprint_id, id_of_board)
-        start_time = sprint_info["startDate"]
-
         start_date = DateTime(str(sprint_info["startDate"]) + ' ' +  "US/Eastern")
-        end_date = DateTime(str(sprint_info["endDate"]) + ' ' +  "US/Eastern")
-        j_query_string = '''project = {project} and issuetype in ({issue_type1}) and issuetype not in ({issue_type2}) and created >= {start_day} AND created <= {end_day} and sprint = {s_id}'''\
-                .format(project= project, issue_type1= self.IssueType.StandardType, issue_type2= self.IssueType.Bug, start_day=start_date.asdatetime().strftime("%Y-%m-%d"), end_day=end_date.asdatetime().strftime("%Y-%m-%d"), s_id=sprint_id)
 
+        j_query_string = '''project = {project} and issuetype in ({issue_type1}) and issuetype not in ({issue_type2}) and sprint = {s_id}'''\
+                .format(project= project, issue_type1= self.IssueType.StandardType, issue_type2= self.IssueType.Bug, s_id=sprint_id)
         if component_filter:
             j_query_string = j_query_string + ''' and component in ({component})'''.format(component=component_filter)
 
         all_info = self.get_task_info_by_query_string(j_query_string)
 
         for s in all_info:
-            if s["Created"] > start_time:
+            if DateTime(s["Created"]) > start_date:
                 return_list.append(s)
+            else:
+                if self.get_time_dict_when_string_logged_in_history_by_task(s["Key"], sprint_id, id_of_board, string):
+                    if self.get_time_dict_when_string_logged_in_history_by_task(s["Key"], sprint_id, id_of_board, string)["log_time"]> start_date:
+                        return_list.append(s)
 
         return return_list
 
+    def get_planned_tasks_by_sprint(self, sprint_id, id_of_board, project, component_filter=None):
+        # Below stories will be omitted:
+          # Created earlier than sprint start time and was in sprint when sprit starts,then remove from current sprint before the sprint ends.
+          # It not make sense to quary all of the tasks belong to one proejct then do filter the history.
+        sprint_info = self.get_sprint_info(sprint_id, id_of_board)
+
+        start_date = DateTime(str(sprint_info["startDate"]) + ' ' +  "US/Eastern")
+
+        j_query_string = '''project = {project} and issuetype in ({issue_type1}) and createdDate  <= "{start_day}" and sprint = {s_id}'''\
+                .format(project= project, issue_type1= self.IssueType.StandardType,start_day=(start_date).asdatetime().strftime("%Y-%m-%d %H:%M"), s_id=sprint_id)
+
+        if component_filter:
+            j_query_string = j_query_string + ''' and component in ({component})'''.format(component=component_filter)
+
+        all_info = self.get_task_info_by_query_string(j_query_string)
+
+        return all_info
+
     def html_get_unplanned_tasks_by_sprint(self, unplanned_task_lists):
         return self.html_get_bug_list_by_tasks(unplanned_task_lists)
+
+    def html_get_planned_tasks_by_sprint(self, planned_task_lists):
+        return self.html_get_bug_list_by_tasks(planned_task_lists)
 
     def html_get_un_completed_tasks_by_sprint(self, un_completed_task_lists):
         return self.html_get_bug_list_by_tasks(un_completed_task_lists)
