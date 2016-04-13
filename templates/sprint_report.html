@@ -260,31 +260,6 @@
     {% endif %}
 </div>
 
-<div class="Unplanned-tasks">
-    <h4>Tasks added in current sprint after sprint began</h4>
-        <div>Total unplanned story points: <b>{{unplanned_story_points|safe}}</b> .</div>
-        <div id="unplanned_stories_div">
-            <div class="btn-toggle-table">Expand/Collapse</div>
-            <table class="table sortable">
-                <tr>
-                    <!--<th width="30">#</th>-->
-                    <th width="100">Key</th>
-                    <th width="100">Priority</th>
-                    <th>Summary</th>
-                    <th width="100">Status</th>
-                 </tr>
-                {% for item in range(unplanned_nest_lists|length) %}
-                <tr>
-                    <!--<td>{{item}}</td>-->
-                    {% for l in unplanned_nest_lists[item] %}
-                        <td> {{l|safe}} </td>
-                    {% endfor %}
-                </tr>
-                {% endfor %}
-                </table>
-        </div>
-</div>
-
 {% if sprint_status != "Success" %}
 <div class="failed-tasks">
     <h4>Un-Completed Tasks</h4>
@@ -474,6 +449,33 @@
         <div>Percentage of tasks which are change requests: <b>{{sprint_change_request_percentage|safe}}</b></div>
 </div>
 
+
+<div class="Unplanned-tasks">
+    <h4>Tasks added in current sprint after sprint began</h4>
+        <div>Total unplanned story points: <b>{{unplanned_story_points|safe}}</b> .</div>
+        <div id="unplanned_stories_div">
+            <div class="btn-toggle-table">Expand/Collapse</div>
+            <table class="table sortable">
+                <tr>
+                    <!--<th width="30">#</th>-->
+                    <th width="100">Key</th>
+                    <th width="100">Priority</th>
+                    <th>Summary</th>
+                    <th width="100">Status</th>
+                 </tr>
+                {% for item in range(unplanned_nest_lists|length) %}
+                <tr>
+                    <!--<td>{{item}}</td>-->
+                    {% for l in unplanned_nest_lists[item] %}
+                        <td> {{l|safe}} </td>
+                    {% endfor %}
+                </tr>
+                {% endfor %}
+                </table>
+        </div>
+</div>
+
+    
 <div class="planned-tasks">
     <h4>Tasks planned to do in this sprint:</h4>
         <div id="planned_stories_div">
