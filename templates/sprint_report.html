@@ -1,6 +1,12 @@
 <html>
 
 <head>
+    {% if customized_component %}
+    <title>{{project_required|safe}} {{customized_component|safe}} Sprint Report - {{sprint_name_string|safe}}</title>
+    {% else %}
+    <title>{{project_required|safe}} Sprint Report - {{sprint_name_string|safe}}</title>
+    {% endif %}
+
     <style>
         .Success {
             color: green;
@@ -475,7 +481,7 @@
         </div>
 </div>
 
-    
+
 <div class="planned-tasks">
     <h4>Tasks planned to do in this sprint:</h4>
         <div id="planned_stories_div">
