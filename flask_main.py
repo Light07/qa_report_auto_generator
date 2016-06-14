@@ -299,6 +299,10 @@ def get_report():
     unplanned_nest_lists = jira.html_get_unplanned_tasks_by_sprint(unplanned_tasks_info)
     planned_nest_lists = jira.html_get_planned_tasks_by_sprint(planned_tasks_info)
 
+    release_tasks_with_fix_version_and_size = jira.get_filtered_task_info_by_fix_version(planned_tasks_info)
+    t_size_number = jira.get_task_members_by_t_size(release_tasks_with_fix_version_and_size)
+    nested_release_tasks_with_fix_version_and_size = jira.html_get_release_tasks_with_fix_version_and_size(release_tasks_with_fix_version_and_size)
+
     un_completed_story_points = jira.html_get_un_completed_story_porints_by_sprint(sprint_id, board_id, standard_tasks_info_by_sprint)
 
     raw_completed_tasks_nest_lists = jira.get_un_completed_tasks_by_sprint(sprint_id, board_id, standard_tasks_info_by_sprint)
@@ -354,7 +358,9 @@ def get_report():
                              sprint_live_defect_nested_lists=sprint_live_defect_nested_list, \
                              sprint_live_defect_percentage=sprint_live_defect_percentage, \
                              sprint_change_request_nested_lists=sprint_change_request_nested_list, \
-                             sprint_change_request_percentage=sprint_change_request_percentage
+                             sprint_change_request_percentage=sprint_change_request_percentage, \
+                             t_size_number=t_size_number,\
+                             release_tasks_with_fix_version_and_size=nested_release_tasks_with_fix_version_and_size
                              )
     global response
     response = make_response(render)

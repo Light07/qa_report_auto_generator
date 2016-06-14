@@ -507,5 +507,34 @@
 </div>
 </div>
 
+
+{% if t_size_number %}
+<div class="released_tasks_with_fix_version_and_size">
+    <h4>Tasks target to release in current sprint and with fix versions:</h4>
+        <p>{{t_size_number|safe}}</p>
+        <div id="released_tasks_with_fix_version_and_size">
+            <div class="btn-toggle-table">Expand/Collapse</div>
+            <table class="table sortable">
+                <tr>
+                    <!--<th width="30">#</th>-->
+                    <th width="100">Key</th>
+                    <th width="100">T-Size</th>
+                    <th>Summary</th>
+                    <th width="100">Status</th>
+                 </tr>
+                {% for item in range(release_tasks_with_fix_version_and_size|length) %}
+                <tr>
+                    <!--<td>{{item}}</td>-->
+                    {% for l in release_tasks_with_fix_version_and_size[item] %}
+                        <td> {{l|safe}} </td>
+                    {% endfor %}
+                </tr>
+                {% endfor %}
+                </table>
+        </div>
+</div>
+</div>
+{% endif %}
+
 </body>
 </html>

@@ -5,6 +5,8 @@
 # https://jira.atlassian.com/browse/JRA-30170
 
 import json
+
+import collections
 from DateTime import DateTime
 
 from jira.client import JIRA
@@ -586,6 +588,9 @@ class JiraHelper(object):
         issue_dict["Story_point"] = issue.fields.customfield_10002
         issue_dict["Components"] = issue.fields.components
         issue_dict["Assignee"] = issue.fields.assignee
+        issue_dict["FixVersions"] = issue.fields.fixVersions
+        if hasattr(issue.fields, "customfield_21300"):
+            issue_dict["T-Size"] = issue.fields.customfield_21300
         return issue_dict
 
     def get_filtered_task_info_by_component(self, task_lists, component_value):
@@ -594,6 +599,15 @@ class JiraHelper(object):
             if l['Components']:
                 if str(component_value) in str(l['Components']):
                     return_list.append(l)
+        return return_list
+
+    def get_filtered_task_info_by_fix_version(self, task_lists):
+        return_list = []
+        for l in task_lists:
+            if l["FixVersions"]:
+                print l["FixVersions"]
+                return_list.append(l)
+
         return return_list
 
     def get_get_different_value_between_lists(self,sub_nested_lists, all_nested_lists):
@@ -852,6 +866,35 @@ class JiraHelper(object):
         str_nested_list = self.remove_list_duplicated_value(bug_list_for_html)
 
         return str_nested_list
+
+    def html_get_release_tasks_with_fix_version_and_size(self, task_list):
+
+        bug_list_for_html = []
+
+        for dict in task_list:
+            if dict.has_key("T-Size") and dict["T-Size"]:
+                bug_info = []
+                bug_info.append('''<a href="{0}/browse/{1}">'''.format(config.jira_options['server'], dict["Key"]) + dict["Key"] + '''</a>''')
+                bug_info.append(dict["T-Size"])
+                bug_info.append(dict["Summary"])
+                bug_info.append(dict["Status"])
+                bug_list_for_html.append(bug_info)
+
+        str_nested_list = self.remove_list_duplicated_value(bug_list_for_html)
+
+        return str_nested_list
+
+    def get_task_members_by_t_size(self, task_list):
+        string = ""
+        size_category = []
+        for dict in task_list:
+            if dict.has_key("T-Size") and dict["T-Size"]:
+                size_category.append(dict["T-Size"])
+        d = collections.Counter(size_category)
+        for k in d:
+            string = string + str(k) + " " + "*" + " " + str( d[k]) + ", "
+        return string[:-2]
+
 
     def html_get_linked_issue_list_by_tasks(self, task_list_has_linked_issue):
         '''
