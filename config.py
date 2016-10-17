@@ -40,3 +40,6 @@ delay_day = 4
 
 # Used for flask as secret key
 secrt_key = os.urandom(32)
+
+# Numbers of issues to return while searching
+maxResults=200

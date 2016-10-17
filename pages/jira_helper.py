@@ -605,7 +605,6 @@ class JiraHelper(object):
         return_list = []
         for l in task_lists:
             if l["FixVersions"]:
-                print l["FixVersions"]
                 return_list.append(l)
 
         return return_list
@@ -673,7 +672,7 @@ class JiraHelper(object):
         return return_list
 
     def get_task_info_by_query_string(self, j_query):
-        all_ids = self.jira.search_issues(j_query, maxResults=False)
+        all_ids = self.jira.search_issues(j_query, maxResults=config.maxResults)
         task_info = []
         for id in all_ids:
             task_info.append(self.get_task_info_by_id(id))
@@ -681,7 +680,7 @@ class JiraHelper(object):
 
     def get_task_id_by_query_string(self, j_query):
         issue_list = []
-        for item in self.jira.search_issues(j_query, maxResults=False):
+        for item in self.jira.search_issues(j_query, maxResults=config.maxResults):
             issue_list.append(str(item))
         return issue_list
 
@@ -1060,7 +1059,6 @@ class JiraHelper(object):
     def html_get_live_defect_percentage_of_all_defects(self, live_defect_id_list_by_sprint, bug_id__list_by_sprint):
         live_defect_num = len(live_defect_id_list_by_sprint)
         all_defect_num = len(bug_id__list_by_sprint) + live_defect_num
-
         return self.calculate_task_percentage(live_defect_num, all_defect_num)
 
     def html_get_change_request_percentage_of_all_defects(self, standard_tasks_id_list_by_sprint, change_request_id_list_by_sprint):
