@@ -45,10 +45,7 @@ def index():
         else:
             flash('All fields are required.')
             return render_template('index.html', form=form)
-
-        return render_template('index.html',form=form)
-
-    elif request.method == 'GET':
+    else:
         return  render_template('index.html',form=form)
 
 @app.route('/customized_component_index', methods=["GET", "POST"])
@@ -533,4 +530,4 @@ def get_school_report():
 
 if __name__ == '__main__':
     # app.run(debug=True, threaded=False)
-    app.run(host="0.0.0.0", debug=False, threaded=True, use_reloader=False)
+    app.run(host="0.0.0.0", debug=True, threaded=True, use_reloader=False)
