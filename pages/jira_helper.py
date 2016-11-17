@@ -579,6 +579,8 @@ class JiraHelper(object):
     def get_task_info_by_id(self, id):
         issue = self.jira.issue(id)
         issue_dict = {}
+        print dir(issue)
+        print dir(issue.fields)
         issue_dict["Key"] = issue.key
         issue_dict["Id"] = issue.id
         issue_dict["Summary"] = (issue.fields.summary).encode('ascii','ignore')
@@ -586,9 +588,11 @@ class JiraHelper(object):
         issue_dict["Status"] = issue.fields.status.name
         issue_dict["Created"] = issue.fields.created
         issue_dict["Story_point"] = issue.fields.customfield_10002
-        issue_dict["Components"] = issue.fields.components
+        if hasattr(issue.fields, "Components"):
+            issue_dict["Components"] = issue.fields.components
         issue_dict["Assignee"] = issue.fields.assignee
-        issue_dict["FixVersions"] = issue.fields.fixVersions
+        if hasattr(issue.fields, "FixVersions"):
+            issue_dict["FixVersions"] = issue.fields.fixVersions
         if hasattr(issue.fields, "customfield_21300"):
             issue_dict["T-Size"] = issue.fields.customfield_21300
         return issue_dict
@@ -604,9 +608,9 @@ class JiraHelper(object):
     def get_filtered_task_info_by_fix_version(self, task_lists):
         return_list = []
         for l in task_lists:
-            if l["FixVersions"]:
-                return_list.append(l)
-
+            if l.has_key('FixVersions'):
+                if l["FixVersions"]:
+                    return_list.append(l)
         return return_list
 
     def get_get_different_value_between_lists(self,sub_nested_lists, all_nested_lists):

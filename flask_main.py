@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
-from flask import Flask, request, redirect, url_for, render_template, flash, session, make_response, jsonify
-
+from flask import Flask, request, redirect, url_for, render_template, flash, session, make_response
 import config
 from pages.jira_helper import JiraHelper
 from pages.forms import EFForm, SelectFieldForm, CustomizedComponentForm, SchoolCustomizedForm
@@ -13,7 +12,7 @@ quick_filter = None
 @app.route('/', methods=["GET", "POST"])
 def index():
     form = EFForm()
-    if request.method== "POST" :
+    if request.method == "POST" :
         if form.submit.data and form.validate():
             session['qa_resource'] = form.qa_resource.data
             session['username'] = form.username.data
@@ -130,19 +129,16 @@ def get_sprint_list():
     form.project_name.data =session['project_name']
     form.sprint_name.choices= session['sprint_name']
 
-    if request.method== "POST" :
+    if request.method == "POST" :
         if form.submit.data and form.validate():
             session["choice_sprint"] = form.sprint_name.data
-
             return redirect(url_for('get_report'))
         else:
             flash('All fields are required.')
             return render_template('show_sprint_lists.html', form=form)
 
-    elif request.method == "GET":
-        return render_template('show_sprint_lists.html', form=form)
-
-    return  render_template('show_sprint_lists.html', form=form)
+    else:
+        return  render_template('show_sprint_lists.html', form=form)
 
 @app.route('/success')
 def success():
