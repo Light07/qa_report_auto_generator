@@ -76,16 +76,16 @@ class JiraHelper(object):
     def get_num_of_sprint_names_by_board_id(self, id_of_board, num=config.num_of_sprint_shown):
         sp_list = []
         sp_name = []
+        active_sprint_list = []
         sp = self.jira.sprints(id_of_board)
-        active_sprint_id = None
+
         for s in sp:
             sp_list.append(s.raw['id'])
-
             if s.raw["state"] == "ACTIVE":
-                active_sprint_id = s.raw['id']
+                active_sprint_list.append(s.raw['id'])
 
+        active_sprint_id = max(active_sprint_list)
         current_index = sorted(sp_list).index(active_sprint_id)
-
         target_sprint_list = sorted(sp_list)[current_index-num-1:current_index +1]
 
         for s in sp:
