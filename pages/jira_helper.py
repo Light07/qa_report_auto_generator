@@ -579,8 +579,6 @@ class JiraHelper(object):
     def get_task_info_by_id(self, id):
         issue = self.jira.issue(id)
         issue_dict = {}
-        print dir(issue)
-        print dir(issue.fields)
         issue_dict["Key"] = issue.key
         issue_dict["Id"] = issue.id
         issue_dict["Summary"] = (issue.fields.summary).encode('ascii','ignore')
