@@ -1,4 +1,6 @@
 # qa_report_auto_generator
+![](https://img.shields.io/badge/language-python-green.svg) 
+![Shippable](https://img.shields.io/shippable/5444c5ecb904a4b21567b0ff.svg)
 
 Call Jira API to generate qa report automatically every sprint, the only thing you need to do is provide the sprint id and board id.
 
